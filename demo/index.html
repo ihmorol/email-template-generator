@@ -535,6 +535,16 @@ kind + (d.time ? ' &middot; ' + esc_(d.time) : '') + '</div>' +
 '</td></tr></table></td></tr></table>';
 }
 
+// Test copy only: run once from the editor. Makes two small batches whose "students" are your own
+// Gmail with +tags (you+student1@gmail.com), so a real send lands in your own inbox.
+function make_test_batches() {
+  const [user, domain] = Session.getEffectiveUser().getEmail().split('@');
+  const list = n => Array.from({ length: n }, (_, i) => user + '+student' + (i + 1) + '@' + domain).join('\n');
+  [['Test batch 1', 3], ['Test batch 2', 2]].forEach(([name, n]) => { if (!findBatch_(name)) saveBatch('', name, list(n)); });
+  db_().rename('Rimons IELTS class mail data (TEST)');
+  Logger.log('Test batches ready. Reload the web app.');
+}
+
 // Run this from the Apps Script editor to check the readers. It touches no data.
 function test_all() {
   const eq = (a, b, what) => { if (a !== b) throw new Error(what + ': expected "' + b + '", got "' + a + '"'); };

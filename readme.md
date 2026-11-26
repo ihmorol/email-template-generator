@@ -47,6 +47,16 @@ Do this while signed in to the Gmail account the emails should come **from**.
 7. Google asks for permission: create Gmail drafts as you, and make and edit the data sheet in your Drive. Click **Authorize access** and pick your account. Google shows "Google hasn't verified this app" because you wrote it yourself. Click **Advanced → Go to Class mail**, then **Allow**.
 8. Copy the **Web app URL**. Open it on your phone (signed in to the same Google account) and use **Add to Home screen** so it opens like an app.
 
+### A test copy first
+
+To try everything for real before the admin uses it, make a second project the same way, named `Class mail TEST`. It gets its own data sheet, so tests never mix with real batches.
+
+1. Do steps 1–8 above and the Zoom steps below in the test project (the same Zoom keys work).
+2. In the editor, pick `make_test_batches` in the function menu and click **Run**. It adds **Test batch 1** (3 students) and **Test batch 2** (2 students). The students are your own address with `+student1`, `+student2`… added, so every test email lands in your own inbox. It also renames the test sheet to **Rimons IELTS class mail data (TEST)**.
+3. Open the test Web app URL and send a test class. Delete the test meeting in Zoom afterwards.
+
+When the test copy is approved, set up the real project the same way, without step 2.
+
 ## Connect Zoom (one time, free)
 
 Until this is done, both class types work by pasting the Zoom invitation or link. Do it while signed in to the Zoom account that hosts the classes.
