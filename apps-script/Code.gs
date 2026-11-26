@@ -1,5 +1,5 @@
 // Rimons IELTS class mail: a private web page (Google Apps Script web app).
-// Batches hold the student emails. Each class: pick the batch, Live or Recorded, Send.
+// Batches hold the student emails. Pick the batch, the kind of email, fill one or two things, Open in Gmail.
 // Data lives in one Google Sheet the script makes in your Drive ("Rimons IELTS class mail data").
 
 const SENDER_NAME = 'Rimons IELTS';
@@ -10,7 +10,18 @@ const BANNER_URL = 'https://cdn.jsdelivr.net/gh/ihmorol/email-template-generator
 const UTC_OFFSET_MIN = 360; // Bangladesh is UTC+6 all year
 const TABS = {
   Batches: ['Name', 'Emails', 'Created'],
-  Classes: ['ID', 'Batch', 'Type', 'Title', 'Start', 'Planned min', 'Actual min', 'Attended', 'Meeting ID', 'Link', 'Sent at', 'Students'],
+  // Every email sent goes in here; Type says which kind. Only live and recorded count as classes.
+  Classes: ['ID', 'Batch', 'Type', 'Title', 'Start', 'Planned min', 'Actual min', 'Attended', 'Meeting ID', 'Link', 'Sent at', 'Students', 'Passcode', 'Note'],
+};
+// The kinds of email. banner = the picture in assets/ (packed in Images.gs).
+const KINDS = {
+  live: { label: 'Live class', dot: '#16A34A', banner: 'live', subject: 'Live class: ' },
+  recorded: { label: 'Class recording', dot: '#B5660A', banner: 'recorded', subject: 'Class recording: ' },
+  reminder: { label: 'Class reminder', dot: '#16A34A', banner: 'reminder', subject: 'Reminder: ' },
+  test: { label: 'Mock test', dot: '#7C3AED', banner: 'test', subject: 'Mock test: ' },
+  resources: { label: 'Class resources', dot: '#2563EB', banner: 'resources', subject: 'Resources: ' },
+  noclass: { label: 'No class', dot: '#64748B', banner: 'noclass', subject: '' },
+  message: { label: 'Notice', dot: '#0A1226', banner: 'notice', subject: '' },
 };
 
 function doGet() {
@@ -31,7 +42,9 @@ function db_() {
     props.setProperty('dbId', ss.getId());
   }
   Object.keys(TABS).forEach(name => {
-    if (ss.getSheetByName(name)) return;
+    const old = ss.getSheetByName(name);
+    // A sheet made by an older version gets the new column names added to its header.
+    if (old) { if (old.getLastColumn() < TABS[name].length) old.getRange(1, 1, 1, TABS[name].length).setValues([TABS[name]]); return; }
     const sh = ss.insertSheet(name);
     sh.getRange('A:Z').setNumberFormat('@'); // keep everything as plain text, no date guessing
     sh.appendRow(TABS[name]);
@@ -139,7 +152,7 @@ function recipients_(batch) {
 
 // Only classes that already happened count; upcoming ones show in the list as "Upcoming".
 function stats_(all) {
-  const classes = all.filter(c => !c.Start || endedAt_(c));
+  const classes = all.filter(c => (c.Type === 'live' || c.Type === 'recorded') && (!c.Start || endedAt_(c)));
   const minutes = classes.reduce((s, c) => s + (Number(c['Actual min']) || Number(c['Planned min']) || 0), 0);
   return {
     classes: classes.length,
@@ -157,8 +170,13 @@ function pageData() {
     const own = classes.filter(c => c.Batch === b.Name);
     const recent = own.reduce((m, c) => (c['Sent at'] > m ? c['Sent at'] : m), b.Created || '');
     // Next numbers for the automatic title ("Batch 82 · Class 14"); scheduled classes count too.
-    const next = { live: own.filter(c => c.Type === 'live').length + 1, recorded: own.filter(c => c.Type === 'recorded').length + 1 };
-    return { name: b.Name, count: emailsOf_(b).length, stats: stats_(own), recent, next };
+    const next = {};
+    ['live', 'recorded', 'test', 'resources'].forEach(t => { next[t] = own.filter(c => c.Type === t).length + 1; });
+    // Classes and tests not over yet, soonest first: what a reminder can be about.
+    const upcoming = own.filter(c => (c.Type === 'live' || c.Type === 'test') && c.Link && START_RE_.test(c.Start) && !endedAt_(c))
+      .sort((x, y) => x.Start.localeCompare(y.Start))
+      .map(c => ({ id: c.ID, type: c.Type, title: c.Title, start: c.Start }));
+    return { name: b.Name, count: emailsOf_(b).length, stats: stats_(own), recent, next, upcoming };
   }).sort((a, b) => b.recent.localeCompare(a.recent) || b.name.localeCompare(a.name, undefined, { numeric: true }));
   return { batches, zoom: zoomStatus_() };
 }
@@ -178,7 +196,7 @@ function batchDetail(name) {
       type: c.Type, title: c.Title, when: whenText_(c.Start || c['Sent at'].replace(' ', 'T'), true),
       planned: Number(c['Planned min']) || 0, actual: Number(c['Actual min']) || 0,
       attended: Number(c.Attended) || 0, students: Number(c.Students) || 0,
-      ended: c.Start ? endedAt_(c) : true,
+      ended: c.Start ? endedAt_(c) : true, note: c.Type === 'noclass' ? c.Note : '',
     })),
   };
 }
@@ -336,77 +354,273 @@ function parseInvite(text) {
 }
 
 const START_RE_ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const DAY_RE_ = /^\d{4}-\d{2}-\d{2}$/;
+const DEFAULT_TIP = 'Consistency beats intensity. Progress over perfection.';
+const TEST_CHECKLIST = [
+  'Join 10 minutes early',
+  'Sit somewhere quiet with steady internet',
+  'Use headphones for Listening',
+  'Keep paper, a pen and a charged phone or laptop ready',
+];
 
-// form: { batch, type: 'live'|'recorded', source: 'zoom'|'paste', title, start, minutes, invite, tip, rec }
-// Returns what the email shows (d) and what the tracker stores (log). `real` creates the Zoom meeting.
-function details_(form, real) {
-  const live = form.type !== 'recorded';
-  const title = (form.title || '').trim();
-  if (form.source === 'zoom' && live) {
-    if (!title) throw new Error('Give the class a title.');
-    if (!START_RE_.test(form.start || '')) throw new Error('Pick the class date and time.');
-    const minutes = Math.min(300, Math.max(15, Number(form.minutes) || 60));
-    const log = { Type: 'live', Title: title, Start: form.start, 'Planned min': minutes };
-    if (!real) return { d: { live, title, time: whenText_(form.start), link: 'https://zoom.us', meetingId: '••• •••• ••••', passcode: '••••••' }, log };
-    const m = createZoomMeeting_(title, form.start, minutes);
-    log['Meeting ID'] = m.id;
-    log.Link = m.join_url;
-    return { d: { live, title, time: whenText_(form.start), link: m.join_url, meetingId: String(m.id).replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1 $2 $3'), passcode: m.password || '' }, log };
-  }
-  if (form.source === 'zoom' && form.rec) {
-    const r = form.rec;
-    if (!/^https:\/\//.test(r.link || '')) throw new Error('Pick a recording.');
-    const t = title || r.title;
+const fmtId_ = id => String(id || '').replace(/\D/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1 $2 $3');
+const hoursText_ = m => m < 60 ? m + ' min' : Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + (m % 60) + ' min' : '');
+const firstUrl_ = s => ((String(s || '').match(/https?:\/\/[^\s<>"]+/) || [])[0] || '');
+const minutes_ = v => Math.min(300, Math.max(15, Number(v) || 60));
+
+// "2026-11-27" -> "Fri, 27 Nov"
+function dayText_(ymd) {
+  return whenText_(ymd + 'T00:00', true).replace(/, 12:00 AM$/, '');
+}
+
+function addDays_(ymd, n) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+
+// "Starts today at 8:00 PM" / "Starts tomorrow at ..." / "Started at ..." for the reminder.
+function startsText_(start) {
+  const today = today_(), day = start.slice(0, 10);
+  const clock = whenText_(start, true).split(', ').pop();
+  if (epochOfLocal_(start) <= Date.now()) return 'Started at ' + clock + '. Join now';
+  if (day === today) return 'Starts today at ' + clock;
+  if (day === addDays_(today, 1)) return 'Starts tomorrow at ' + clock;
+  return 'Starts ' + whenText_(start, true);
+}
+
+// A meeting made on Send (live class or a test on Zoom). Before Send the preview shows placeholders.
+function meeting_(title, start, minutes, real) {
+  if (!real) return { link: 'https://zoom.us', meetingId: '••• •••• ••••', passcode: '••••••', id: '' };
+  const m = createZoomMeeting_(title, start, minutes);
+  return { link: m.join_url, meetingId: fmtId_(m.id), passcode: m.password || '', id: String(m.id) };
+}
+
+// One builder per kind of email. Each returns what the email shows (d) and what the history stores (log).
+// form: { batch, type, title, tip, ... } plus the fields of its kind.
+const MAKERS_ = {
+  live(form, real) {
+    const title = (form.title || '').trim();
+    if (form.source === 'zoom') {
+      if (!title) throw new Error('Give the class a title.');
+      if (!START_RE_.test(form.start || '')) throw new Error('Pick the class date and time.');
+      const minutes = minutes_(form.minutes);
+      const m = meeting_(title, form.start, minutes, real);
+      return {
+        d: { title, time: whenText_(form.start), link: m.link, meetingId: m.meetingId, passcode: m.passcode, button: 'Join the class', inSubject: whenText_(form.start) },
+        log: { Start: form.start, 'Planned min': minutes, 'Meeting ID': m.id, Link: real ? m.link : '', Passcode: real ? m.passcode : '' },
+      };
+    }
+    const p = parseInvite(form.invite);
+    if (!p.link) throw new Error('No link found. Paste the whole Zoom invitation.');
+    const t = title || p.topic || 'IELTS live class';
     return {
-      d: { live, title: t, time: START_RE_.test(r.start) ? whenText_(r.start) : '', link: r.link, passcode: r.passcode || '' },
-      log: { Type: 'recorded', Title: t, Start: START_RE_.test(r.start) ? r.start : '', 'Planned min': r.minutes || '', 'Actual min': r.minutes || '', Link: r.link },
+      d: { title: t, time: p.time, link: p.link, meetingId: p.meetingId, passcode: p.passcode, button: 'Join the class', inSubject: p.time },
+      log: { 'Meeting ID': p.meetingId.replace(/\D/g, ''), Link: p.link, Passcode: p.passcode },
     };
-  }
-  const p = parseInvite(form.invite);
-  if (!p.link) throw new Error('No link found. Paste the whole Zoom invitation or the recording link.');
-  const t = title || p.topic;
-  const digits = p.meetingId.replace(/\D/g, '');
+  },
+
+  recorded(form) {
+    const title = (form.title || '').trim();
+    if (form.source === 'zoom') {
+      const r = form.rec || {};
+      if (!/^https:\/\//.test(r.link || '')) throw new Error('Pick a recording.');
+      const ok = START_RE_.test(r.start || '');
+      return {
+        d: { title: title || r.title, time: ok ? whenText_(r.start) : '', link: r.link, passcode: r.passcode || '', button: 'Watch the recording' },
+        log: { Start: ok ? r.start : '', 'Planned min': r.minutes || '', 'Actual min': r.minutes || '', Link: r.link },
+      };
+    }
+    const p = parseInvite(form.invite);
+    if (!p.link) throw new Error('No link found. Paste the recording link.');
+    return {
+      d: { title: title || p.topic || 'IELTS class recording', time: p.time, link: p.link, passcode: p.passcode, button: 'Watch the recording' },
+      log: { Link: p.link },
+    };
+  },
+
+  // Re-sends the link of a class or test already made for this batch. Nothing to type.
+  reminder(form) {
+    const c = rows_('Classes').find(x => x.ID === form.classId);
+    if (!c || !c.Link || !START_RE_.test(c.Start)) throw new Error('Pick the class to remind them about.');
+    const test = c.Type === 'test';
+    const lead = startsText_(c.Start);
+    return {
+      d: {
+        title: c.Title, time: whenText_(c.Start), note: lead, link: c.Link, meetingId: fmtId_(c['Meeting ID']), passcode: c.Passcode,
+        button: test ? 'Open the test' : 'Join the class', subject: 'Reminder: ' + c.Title + ' ' + lead.charAt(0).toLowerCase() + lead.slice(1),
+      },
+      log: { Link: c.Link, Note: c.ID },
+    };
+  },
+
+  test(form, real) {
+    const title = (form.title || '').trim();
+    if (!title) throw new Error('Give the test a title.');
+    if (!START_RE_.test(form.start || '')) throw new Error('Pick the test date and time.');
+    const minutes = minutes_(form.minutes);
+    const onZoom = form.where !== 'link';
+    let m = { link: firstUrl_(form.testLink), meetingId: '', passcode: '', id: '' };
+    if (onZoom) m = meeting_(title, form.start, minutes, real);
+    else if (!m.link) throw new Error('Paste the test link.');
+    return {
+      d: {
+        title, time: whenText_(form.start) + ' · ' + hoursText_(minutes), link: m.link, meetingId: m.meetingId, passcode: m.passcode,
+        button: onZoom ? 'Join the test room' : 'Open the test', checklist: TEST_CHECKLIST, inSubject: whenText_(form.start),
+      },
+      log: { Start: form.start, 'Planned min': minutes, 'Meeting ID': m.id, Link: real || !onZoom ? m.link : '', Passcode: real ? m.passcode : '' },
+    };
+  },
+
+  // Files are already in Google Drive (uploaded when he picked them); links are added as they are.
+  resources(form) {
+    const title = (form.title || '').trim();
+    if (!title) throw new Error('Give the resources a title.');
+    const files = (form.files || []).filter(f => f && /^https:\/\//.test(f.open)).map(f => ({
+      name: String(f.name), badge: fileBadge_(f.name, f.mime), meta: fileKind_(f.name, f.mime) + (f.size ? ' · ' + sizeText_(f.size) : ''), open: f.open, download: f.download,
+    }));
+    const links = (form.links || []).map(firstUrl_).filter(Boolean).map(u => ({ name: linkName_(u), badge: 'LINK', meta: u.replace(/^https?:\/\/(www\.)?/, '').slice(0, 60), open: u }));
+    const items = files.concat(links);
+    if (!items.length) throw new Error('Add a file or a link.');
+    return {
+      d: { title, message: (form.note || '').trim(), items, link: items.length === 1 ? items[0].open : '' },
+      log: { Link: items[0].open, Note: items.map(i => i.name).join(', ') },
+    };
+  },
+
+  noclass(form) {
+    if (!DAY_RE_.test(form.from || '') || !DAY_RE_.test(form.back || '')) throw new Error('Pick the day off and the day classes start again.');
+    if (form.back <= form.from) throw new Error('Classes must start again after the day off.');
+    const last = addDays_(form.back, -1);
+    const off = last === form.from ? 'on ' + dayText_(form.from) : 'from ' + dayText_(form.from) + ' to ' + dayText_(last);
+    const reason = ['Holiday', 'Break', 'Class cancelled'].includes(form.reason) ? form.reason : '';
+    return {
+      d: { title: 'No class ' + off, time: reason, note: 'Classes start again on ' + dayText_(form.back), message: (form.note || '').trim() },
+      log: { Start: form.from + 'T00:00', Note: 'back ' + form.back },
+    };
+  },
+
+  message(form) {
+    const title = (form.title || '').trim(), text = (form.message || '').trim();
+    if (!title) throw new Error('Give the message a title.');
+    if (!text) throw new Error('Write the message.');
+    return { d: { title, message: text, link: '' }, log: { Note: text.slice(0, 200) } };
+  },
+};
+
+function build_(form, real) {
+  const kind = MAKERS_[form.type] ? form.type : 'live';
+  const { d, log } = MAKERS_[kind](form, real);
+  d.kind = kind;
+  d.tip = kind === 'message' ? '' : (form.tip || '').trim() || DEFAULT_TIP;
+  log.Type = kind; log.Title = d.title;
+  const subject = d.subject || KINDS[kind].subject + d.title + (d.inSubject ? ' | ' + d.inSubject : '');
+  const banner = KINDS[kind].banner;
+  return { d, subject, text: plainText_(d), html: emailHtml_(d, bannerData_(banner)), mailHtml: emailHtml_(d, bannerData_(banner) && 'cid:banner'), banner, log };
+}
+
+// The plain-text part of the email (shown by mail apps that do not show designs).
+function plainText_(d) {
+  return [
+    d.title, d.time, d.note, d.message,
+    d.button && d.link && d.button + ': ' + d.link,
+    d.meetingId && 'Meeting ID: ' + d.meetingId, d.passcode && 'Passcode: ' + d.passcode,
+    ...(d.items || []).map(i => i.name + ': ' + i.open),
+    ...(d.checklist || []).map(c => '- ' + c),
+  ].filter(Boolean).join('\n');
+}
+
+// ---- Resources: files go to one Drive folder, shared as "anyone with the link can view" ----
+
+function resourceFolder_() {
+  const props = PropertiesService.getUserProperties();
+  const id = props.getProperty('resFolder');
+  if (id) { try { const f = DriveApp.getFolderById(id); if (!f.isTrashed()) return f; } catch (e) { /* deleted: make a new one */ } }
+  const f = DriveApp.createFolder('Rimons IELTS class resources');
+  props.setProperty('resFolder', f.getId());
+  return f;
+}
+
+// Called once per file as soon as he picks it, so Send stays quick. data is base64.
+function uploadResource(name, mime, data) {
+  const file = resourceFolder_().createFile(Utilities.newBlob(Utilities.base64Decode(data), mime || 'application/octet-stream', name));
+  let shared = true;
+  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { shared = false; }
+  const id = file.getId();
   return {
-    d: { live, title: t, time: p.time, link: p.link, meetingId: p.meetingId, passcode: p.passcode },
-    log: { Type: live ? 'live' : 'recorded', Title: t, Start: '', 'Meeting ID': live ? digits : '', Link: p.link },
+    id, name: file.getName(), size: file.getSize(), mime: file.getMimeType(), shared,
+    open: 'https://drive.google.com/file/d/' + id + '/view',
+    download: 'https://drive.google.com/uc?export=download&id=' + id,
   };
 }
 
-function build_(form, real) {
-  const { d, log } = details_(form, real);
-  d.title = d.title || (d.live ? 'IELTS live class' : 'IELTS class recording');
-  log.Title = d.title;
-  d.tip = (form.tip || '').trim() || 'Consistency beats intensity. Progress over perfection.';
-  const subject = (d.live ? 'Live class: ' : 'Class recording: ') + d.title + (d.live && d.time ? ' | ' + d.time : '');
-  const text = [d.title, d.time, 'Link: ' + d.link, d.meetingId && 'Meeting ID: ' + d.meetingId, d.passcode && 'Passcode: ' + d.passcode]
-    .filter(Boolean).join('\n');
-  const kind = bannerKind_(d.live);
-  return { d, subject, text, html: emailHtml_(d, bannerData_(kind)), mailHtml: emailHtml_(d, bannerData_(kind) && 'cid:banner'), kind, live: d.live, log };
+// Removing a file from the list moves it to the Drive bin (it can be restored there for 30 days).
+function removeResource(id) {
+  try { DriveApp.getFileById(id).setTrashed(true); } catch (e) { /* already gone */ }
 }
 
-// What the email looks like before anything is filled in (shown as a sample on the page).
-function sampleEmail(type) {
-  const live = type !== 'recorded';
+const EXT_ = n => (String(n).match(/\.([a-z0-9]{1,5})$/i) || [])[1] || '';
+function fileBadge_(name, mime) {
+  const ext = EXT_(name).toUpperCase();
+  return ext ? ext.slice(0, 4) : /pdf/.test(mime) ? 'PDF' : /audio/.test(mime) ? 'MP3' : /video/.test(mime) ? 'MP4' : /image/.test(mime) ? 'IMG' : 'FILE';
+}
+function fileKind_(name, mime) {
+  const e = EXT_(name).toLowerCase(), m = String(mime || '');
+  if (e === 'pdf' || /pdf/.test(m)) return 'PDF';
+  if (/audio/.test(m) || /^(mp3|m4a|wav|aac|ogg)$/.test(e)) return 'Audio';
+  if (/video/.test(m) || /^(mp4|mov|mkv|webm)$/.test(e)) return 'Video';
+  if (/image/.test(m) || /^(jpg|jpeg|png|webp|gif|heic)$/.test(e)) return 'Picture';
+  if (/^(doc|docx|odt|rtf|txt)$/.test(e) || /word|text/.test(m)) return 'Document';
+  if (/^(ppt|pptx|key)$/.test(e) || /presentation/.test(m)) return 'Slides';
+  if (/^(xls|xlsx|csv)$/.test(e) || /sheet/.test(m)) return 'Spreadsheet';
+  return 'File';
+}
+function sizeText_(b) {
+  return b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + ' MB';
+}
+function linkName_(u) {
+  if (/youtu\.?be/.test(u)) return 'YouTube video';
+  if (/drive\.google|docs\.google/.test(u)) return 'Google Drive file';
+  if (/zoom\.us\/rec/.test(u)) return 'Zoom recording';
+  if (/rimonsielts\.com/.test(u)) return 'Rimons IELTS website';
+  return u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+}
+
+// What each kind of email looks like before anything is filled in (shown as a sample on the page).
+function sampleEmail(kind) {
+  kind = MAKERS_[kind] ? kind : 'live';
   const t = new Date(Date.now() + UTC_OFFSET_MIN * 6e4 + 864e5).toISOString().slice(0, 10) + 'T20:00';
-  return emailHtml_({
-    live, title: live ? 'Your class title' : 'Your recording title', time: live ? whenText_(t) : '',
-    link: 'https://zoom.us', meetingId: live ? '••• •••• ••••' : '', passcode: '••••••',
-    tip: 'Consistency beats intensity. Progress over perfection.',
-  }, bannerData_(bannerKind_(live)));
+  const codes = { link: 'https://zoom.us', meetingId: '••• •••• ••••', passcode: '••••••' };
+  const d = {
+    live: Object.assign({ title: 'Your class title', time: whenText_(t), button: 'Join the class' }, codes),
+    recorded: { title: 'Your recording title', link: 'https://zoom.us', passcode: '••••••', button: 'Watch the recording' },
+    reminder: Object.assign({ title: 'Your class title', time: whenText_(t), note: 'Starts tomorrow at 8:00 PM', button: 'Join the class' }, codes),
+    test: Object.assign({ title: 'Your test title', time: whenText_(t) + ' · 2 h 45 min', button: 'Join the test room', checklist: TEST_CHECKLIST }, codes),
+    resources: { title: 'Your resources title', message: 'Your note to students', items: [
+      { name: 'Reading practice test.pdf', badge: 'PDF', meta: 'PDF · 2.4 MB', open: 'https://drive.google.com', download: 'https://drive.google.com' },
+      { name: 'YouTube video', badge: 'LINK', meta: 'youtube.com/watch', open: 'https://youtube.com' }] },
+    noclass: { title: 'No class on Fri, 27 Nov', time: 'Holiday', note: 'Classes start again on Sat, 28 Nov' },
+    message: { title: 'Your message title', message: 'Your message to students' },
+  }[kind];
+  d.kind = kind;
+  d.tip = kind === 'message' ? '' : DEFAULT_TIP;
+  return emailHtml_(d, bannerData_(KINDS[kind].banner));
 }
 
 // Called by the page whenever the form changes.
 function preview(form) {
   const mail = build_(form, false);
   const to = recipients_(form.batch);
-  // A new Zoom meeting does not exist until Send, so its email cannot be copied yet.
-  const final = !(form.type !== 'recorded' && form.source === 'zoom');
-  return { subject: mail.subject, html: mail.html, count: to.length, copy: final ? copyKit_(mail, to) : null };
+  return { subject: mail.subject, html: mail.html, count: to.length, copy: makesMeeting_(form) ? null : copyKit_(mail, to) };
+}
+
+// A new Zoom meeting does not exist until Send, so that email cannot be copied before it.
+function makesMeeting_(form) {
+  return (form.type === 'live' && form.source === 'zoom') || (form.type === 'test' && form.where !== 'link');
 }
 
 // What the emergency copy buttons put on the clipboard.
 function copyKit_(mail, to) {
-  return { html: emailHtml_(mail.d, BANNER_URL + mail.kind + '.jpg'), text: mail.text, subject: mail.subject, emails: to };
+  return { html: emailHtml_(mail.d, BANNER_URL + mail.banner + '.jpg'), text: mail.text, subject: mail.subject, emails: to };
 }
 
 // Called by the Send button. Nothing is sent from here: the designed email is saved as a Gmail
@@ -418,7 +632,7 @@ function send(form) {
   const mail = build_(form, true);
   const me = Session.getEffectiveUser().getEmail();
   const opts = { htmlBody: mail.mailHtml, bcc: to.join(','), name: SENDER_NAME };
-  if (bannerData_(mail.kind)) opts.inlineImages = { banner: bannerBlob_(mail.kind) };
+  if (bannerData_(mail.banner)) opts.inlineImages = { banner: bannerBlob_(mail.banner) };
   let draft = null, draftError = '';
   try { draft = GmailApp.createDraft(me, mail.subject, mail.text, opts); } catch (e) { draftError = e.message || String(e); }
   writeRow_('Classes', 0, Object.assign(mail.log, {
@@ -428,7 +642,7 @@ function send(form) {
   return {
     count: to.length,
     subject: mail.subject,
-    zoom: form.type !== 'recorded' && form.source === 'zoom',
+    zoom: makesMeeting_(form),
     html: mail.html,
     copy: copyKit_(mail, to),
     draftError,
@@ -441,43 +655,66 @@ function esc_(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
-// Inline styles only (Gmail drops most <style> rules) and no images, so nothing can break.
+// Message text: escaped, line breaks kept, links clickable.
+function richText_(s) {
+  return esc_(s).replace(/https?:\/\/[^\s<>"&]+(?:&amp;[^\s<>"&]+)*/g, u => '<a href="' + u + '" style="color:#1D4ED8;word-break:break-all">' + u + '</a>').replace(/\n/g, '<br>');
+}
+
+// Inline styles only (Gmail drops most <style> rules) and email-safe tables.
 // Colours and type follow the Rimons IELTS site (Aurora bento): page #F4F6FB, ink #0A1226, blue #2563EB.
 // The banner travels inside the email as an inline image (cid:banner), so it needs no hosting and never breaks.
 // The page preview shows the same picture as a data URL.
-function bannerKind_(live) { return live ? 'live' : 'recorded'; }
 function bannerData_(kind) { return typeof IMAGES !== 'undefined' && IMAGES[kind] ? 'data:image/jpeg;base64,' + IMAGES[kind] : ''; }
 function bannerBlob_(kind) { return Utilities.newBlob(Utilities.base64Decode(IMAGES[kind]), 'image/jpeg', kind + '.jpg'); }
 
 function emailHtml_(d, img) {
+  const k = KINDS[d.kind] || KINDS.live;
   const font = "'Plus Jakarta Sans',Arial,Helvetica,sans-serif";
   const mono = "SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace";
+  const table = (style, inner) => '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' + (style ? ' style="' + style + '"' : '') + '>' + inner + '</table>';
   const code = (label, value) => value
     ? '<tr><td style="padding:6px 0;color:#5B6478;font-size:14px">' + label + '</td>' +
       '<td align="right" style="padding:6px 0;color:#0A1226;font-size:17px;font-weight:600;font-family:' + mono + ';letter-spacing:0.02em">' + esc_(value) + '</td></tr>'
     : '';
-  const dot = d.live ? '#16A34A' : '#B5660A';
-  const kind = d.live ? 'Live class' : 'Class recording';
+  const pill = (href, text, dark) => '<a href="' + esc_(href) + '" style="display:inline-block;margin:0 8px 0 0;padding:9px 18px;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none;' +
+    (dark ? 'background:#2563EB;color:#FFFFFF' : 'background:#F4F6FB;color:#0A1226') + '">' + text + '</a>';
+  const item = i => '<tr><td style="padding:14px 0;border-top:1px solid #E6E9F0">' +
+    table('', '<tr><td width="44" valign="top"><div style="width:44px;height:44px;border-radius:10px;background:#EAF0FF;color:#1D4ED8;font-size:11px;font-weight:700;line-height:44px;text-align:center;letter-spacing:0.04em">' + esc_(i.badge) + '</div></td>' +
+      '<td valign="top" style="padding-left:12px"><div style="font-size:15px;font-weight:600;color:#0A1226;word-break:break-word">' + esc_(i.name) + '</div>' +
+      '<div style="margin-top:2px;font-size:13px;color:#5B6478;word-break:break-all">' + esc_(i.meta) + '</div>' +
+      '<div style="margin-top:10px">' + pill(i.open, 'Open', true) + (i.download ? pill(i.download, 'Download') : '') + '</div></td></tr>') +
+    '</td></tr>';
+  const head = img ? '<img src="' + img + '" width="560" alt="' + k.label + ', Rimons IELTS" style="display:block;width:100%;max-width:560px;height:auto;border:0;border-radius:20px 20px 0 0">' : '';
   return '' +
 '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6FB;font-family:' + font + '">' +
 '<tr><td align="center" style="padding:16px 8px">' +
 '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">' +
 '<tr><td style="background:#FFFFFF;border-radius:20px;box-shadow:0 1px 2px rgba(10,18,38,0.06),0 8px 24px -8px rgba(10,18,38,0.12)">' +
-(img ? '<a href="' + esc_(d.link) + '" style="display:block;text-decoration:none"><img src="' + img + '" width="560" alt="' + kind + ', Rimons IELTS" style="display:block;width:100%;max-width:560px;height:auto;border:0;border-radius:20px 20px 0 0"></a>' : '') +
+(head && d.link ? '<a href="' + esc_(d.link) + '" style="display:block;text-decoration:none">' + head + '</a>' : head) +
 '<div style="padding:24px 20px">' +
 '<div style="font-size:24px;line-height:1.25;font-weight:700;color:#0A1226;letter-spacing:-0.02em">' + esc_(d.title) + '</div>' +
 '<div style="margin-top:8px;font-size:15px;color:#3B4660">' +
-'<span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:' + dot + ';margin-right:8px;vertical-align:1px"></span>' +
-kind + (d.time ? ' &middot; ' + esc_(d.time) : '') + '</div>' +
+'<span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:' + k.dot + ';margin-right:8px;vertical-align:1px"></span>' +
+k.label + (d.time ? ' &middot; ' + esc_(d.time) : '') + '</div>' +
+(d.note ? '<div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:#EAF0FF;color:#1D4ED8;font-size:16px;font-weight:600">' + esc_(d.note) + '</div>' : '') +
+(d.message ? '<div style="margin-top:16px;font-size:16px;line-height:1.6;color:#0A1226">' + richText_(d.message) + '</div>' : '') +
 (d.meetingId || d.passcode
-  ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:#F4F6FB;border-radius:14px"><tr><td style="padding:10px 16px">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + code('Meeting ID', d.meetingId) + code('Passcode', d.passcode) + '</table></td></tr></table>'
+  ? table('margin-top:20px;background:#F4F6FB;border-radius:14px', '<tr><td style="padding:10px 16px">' + table('', code('Meeting ID', d.meetingId) + code('Passcode', d.passcode)) + '</td></tr>')
   : '') +
-'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td align="center" style="border-radius:999px;background:#2563EB">' +
-'<a href="' + esc_(d.link) + '" style="display:block;padding:15px 24px;color:#FFFFFF;font-size:16px;font-weight:600;text-decoration:none;border-radius:999px">' +
-(d.live ? 'Join the class' : 'Watch the recording') + '</a></td></tr></table>' +
-'<div style="margin-top:12px;font-size:13px;color:#5B6478;text-align:center;word-break:break-all">or open <a href="' + esc_(d.link) + '" style="color:#1D4ED8">' + esc_(d.link) + '</a></div>' +
-'<div style="margin-top:24px;padding-top:20px;border-top:1px solid #E6E9F0;font-size:15px;line-height:1.5;color:#3B4660"><span style="color:#B5660A;font-weight:600">Tip</span>&nbsp; ' + esc_(d.tip) + '</div>' +
+(d.button && d.link
+  ? table('margin-top:24px', '<tr><td align="center" style="border-radius:999px;background:#2563EB">' +
+    '<a href="' + esc_(d.link) + '" style="display:block;padding:15px 24px;color:#FFFFFF;font-size:16px;font-weight:600;text-decoration:none;border-radius:999px">' + d.button + '</a></td></tr>') +
+    '<div style="margin-top:12px;font-size:13px;color:#5B6478;text-align:center;word-break:break-all">or open <a href="' + esc_(d.link) + '" style="color:#1D4ED8">' + esc_(d.link) + '</a></div>'
+  : '') +
+(d.items && d.items.length
+  ? table('margin-top:20px', d.items.map(item).join('')) +
+    '<div style="margin-top:4px;font-size:13px;line-height:1.5;color:#5B6478">Files open in Google Drive, on a phone or a computer. Tap Download to keep a copy.</div>'
+  : '') +
+(d.checklist
+  ? '<div style="margin-top:24px;font-size:15px;font-weight:600;color:#0A1226">Before the test</div>' +
+    table('margin-top:8px', d.checklist.map(c => '<tr><td width="24" valign="top" style="padding:4px 0;color:#16A34A;font-weight:700">&#10003;</td><td style="padding:4px 0;font-size:15px;color:#3B4660">' + esc_(c) + '</td></tr>').join(''))
+  : '') +
+(d.tip ? '<div style="margin-top:24px;padding-top:20px;border-top:1px solid #E6E9F0;font-size:15px;line-height:1.5;color:#3B4660"><span style="color:#B5660A;font-weight:600">Tip</span>&nbsp; ' + esc_(d.tip) + '</div>' : '') +
 '</div></td></tr>' +
 '<tr><td align="center" style="padding:16px 4px 0;font-size:13px;color:#5B6478">' +
 '<a href="https://wa.me/+8801873405061" style="color:#3B4660;text-decoration:none;font-weight:600">WhatsApp</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;' +
@@ -510,7 +747,12 @@ function test_all() {
   eq(rec.link, 'https://us05web.zoom.us/rec/share/Xy_z-12.ab', 'rec link');
   eq(rec.passcode, 'a1$b2C!', 'rec passcode');
   eq(parseInvite('no link here').link, '', 'no link');
-  eq(emailHtml_({ title: '<b>x</b>', link: 'https://a.b/?q="1"', tip: 't', live: true }).includes('<b>x</b>'), false, 'title escaped');
+  eq(emailHtml_({ kind: 'live', title: '<b>x</b>', link: 'https://a.b/?q="1"', tip: 't' }).includes('<b>x</b>'), false, 'title escaped');
+  eq(MAKERS_.noclass({ from: '2026-12-01', back: '2026-12-04', reason: 'Holiday' }).d.title, 'No class from Tue, 1 Dec to Thu, 3 Dec', 'days off');
+  eq(MAKERS_.noclass({ from: '2026-12-01', back: '2026-12-02' }).d.note, 'Classes start again on Wed, 2 Dec', 'one day off');
+  eq(fileBadge_('Reading Test 3.pdf', ''), 'PDF', 'file badge');
+  eq(fileKind_('track 1.mp3', 'audio/mpeg') + ' ' + sizeText_(2621440), 'Audio 2.5 MB', 'file kind and size');
+  eq(richText_('see https://a.b/x?y=1&z=2 now').includes('href="https://a.b/x?y=1&amp;z=2"'), true, 'links in messages');
 
   const ex = t => extractEmails_(t).emails.join(' ');
   eq(ex('Ana <Ana@x.com>, b@y.co\nana@x.com'), 'ana@x.com b@y.co', 'names, commas, repeats');

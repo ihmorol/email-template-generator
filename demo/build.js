@@ -17,6 +17,7 @@ function sheetApi(name) {
     setFrozenRows() {},
     getDataRange: () => ({ getValues: () => rows.map(r => r.slice()) }),
     deleteRow: i => { rows.splice(i - 1, 1); saveDB(); },
+    getLastColumn: () => (rows[0] ? rows[0].length : 0),
   };
 }
 const ss = { getId: () => 'db1', getSheetByName: n => DB[n] ? sheetApi(n) : null, insertSheet: n => { DB[n] = []; saveDB(); return sheetApi(n); }, deleteSheet() {} };
@@ -29,20 +30,24 @@ const PropertiesService = {
 };
 const CacheService = { getScriptCache: () => ({ get: k => sessionStorage.getItem(k), put: (k, v) => sessionStorage.setItem(k, v) }) };
 const Utilities = { base64Encode: s => btoa(s), getUuid: () => crypto.randomUUID(), base64Decode: s => s.length, newBlob: (b, type, name) => ({ type, name, bytes: b }) };
+const driveFiles = {};
+const mkFile = blob => { const id = 'demo' + Math.random().toString(36).slice(2, 10); const f = { getId: () => id, getName: () => blob.name, getSize: () => Math.round(blob.bytes * 0.75), getMimeType: () => blob.type || 'application/octet-stream', setSharing() {}, setTrashed() {} }; driveFiles[id] = f; return f; };
+const demoFolder = { getId: () => 'demoFolder', isTrashed: () => false, createFile: mkFile };
+const DriveApp = { Access: { ANYONE_WITH_LINK: 1 }, Permission: { VIEW: 1 }, createFolder: () => demoFolder, getFolderById: () => demoFolder, getFileById: id => driveFiles[id] || { setTrashed() {} } };
 const MailApp = { getRemainingDailyQuota: () => 100 };
 const Session = { getEffectiveUser: () => ({ getEmail: () => 'teacher@example.com' }) };
 window.sent = []; window.zoomCalls = [];
 const GmailApp = { sendEmail: (...a) => sent.push(['send', ...a]), createDraft: (...a) => { if (location.search.includes('draftfail')) throw new Error('Service invoked too many times for one day: gmail'); sent.push(['draft', ...a]); return { getMessage: () => ({ getId: () => '18c4f2a9b7d3e1f0' }) }; } };
-const res = (code, body) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(body) });
+const zres = (code, body) => ({ getResponseCode: () => code, getContentText: () => JSON.stringify(body) });
 const UrlFetchApp = { fetch: (url, o) => {
   zoomCalls.push({ url, o });
-  if (url.includes('/oauth/token')) return res(200, { access_token: 'tok', expires_in: 3600, scope: location.search.includes('noscope') ? 'cloud_recording:read:list_user_recordings:admin' : 'meeting:write:meeting:admin meeting:read:past_meeting:admin cloud_recording:read:list_user_recordings:admin' });
-  if (url.includes('/meetings') && !url.includes('past_meetings') && o.method === 'post') { const b = JSON.parse(o.payload); return res(201, { id: 84512349876, password: 'r7Kq2x', join_url: 'https://us06web.zoom.us/j/84512349876?pwd=demo', topic: b.topic }); }
-  if (url.includes('/past_meetings/')) return res(200, { duration: 97, participants_count: 29 });
-  if (url.includes('/recordings')) return res(200, { meetings: [
+  if (url.includes('/oauth/token')) return zres(200, { access_token: 'tok', expires_in: 3600, scope: location.search.includes('noscope') ? 'cloud_recording:read:list_user_recordings:admin' : 'meeting:write:meeting:admin meeting:read:past_meeting:admin cloud_recording:read:list_user_recordings:admin' });
+  if (url.includes('/meetings') && !url.includes('past_meetings') && o.method === 'post') { const b = JSON.parse(o.payload); return zres(201, { id: 84512349876, password: 'r7Kq2x', join_url: 'https://us06web.zoom.us/j/84512349876?pwd=demo', topic: b.topic }); }
+  if (url.includes('/past_meetings/')) return zres(200, { duration: 97, participants_count: 29 });
+  if (url.includes('/recordings')) return zres(200, { meetings: [
     { topic: 'Reading: matching headings', start_time: '2026-11-24T14:00:00Z', duration: 58, share_url: 'https://us06web.zoom.us/rec/share/abc123', password: 'Rd5!x' },
     { topic: 'Listening Part 3 practice', start_time: '2026-11-21T14:05:00Z', duration: 72, share_url: 'https://us06web.zoom.us/rec/share/def456', recording_play_passcode: 'xyz' } ] });
-  return res(404, { message: 'not mocked' });
+  return zres(404, { message: 'not mocked' });
 } };
 ${code}
 // Demo only: banners from this deployment, and sample batches on first visit.
@@ -56,6 +61,9 @@ if (!localStorage.getItem('demoDB')) {
    [5, 'live', 'Batch 82 · Class 3', 90, 97, 29], [3, 'live', 'Batch 81 · Class 7', 90, 91, 22]].forEach(([d, type, title, plan, act, att]) =>
     writeRow_('Classes', 0, { ID: Utilities.getUuid(), Batch: title.split(' · ')[0], Type: type, Title: title, Start: day(d), 'Planned min': plan, 'Actual min': act, Attended: att,
       'Meeting ID': type === 'live' ? '84512349876' : '', Link: 'https://us06web.zoom.us/j/84512349876', 'Sent at': day(d + 1).replace('T', ' '), Students: 28 }));
+  // One class still to come, so Reminder has something to remind about.
+  writeRow_('Classes', 0, { ID: Utilities.getUuid(), Batch: 'Batch 82', Type: 'live', Title: 'Batch 82 · Class 4', Start: day(-1), 'Planned min': 90,
+    'Meeting ID': '84512349876', Link: 'https://us06web.zoom.us/j/84512349876?pwd=demo', Passcode: 'r7Kq2x', 'Sent at': day(0).replace('T', ' '), Students: 22 });
 }
 function resetDemo() { localStorage.removeItem('demoDB'); localStorage.removeItem('demoProps'); location.reload(); }
 function runner(ok, fail) { return new Proxy({}, { get: (t, p) => p === 'withSuccessHandler' ? f => runner(f, fail) : p === 'withFailureHandler' ? f => runner(ok, f) :

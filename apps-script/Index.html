@@ -31,6 +31,12 @@ p{margin:0}
 .seg{display:flex;gap:4px;padding:4px;border-radius:24px;background:rgba(255,255,255,.75);box-shadow:var(--shadow)}
 .seg button{min-height:40px;padding:8px 16px;border:0;border-radius:20px;background:transparent;color:var(--ink2);font-weight:600;font-size:15px}
 .seg button.on{background:var(--ink);color:#fff}
+@media (max-width:599px){
+ .top{flex-wrap:wrap;row-gap:12px}
+ .brand{display:flex;align-items:baseline;gap:8px}
+ .seg{flex:1 1 100%}
+ .seg button{flex:1}
+}
 main{max-width:600px;margin:0 auto;padding:8px 16px 16px}
 main section > .card:last-child{margin-bottom:0}
 .card{background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:12px}
@@ -39,10 +45,10 @@ main section > .card:last-child{margin-bottom:0}
 
 /* controls */
 label.field{display:block;font-weight:600;font-size:15px;margin:0 0 8px}
-.gap{margin-top:16px}
+.gap,label.field.gap{margin-top:16px}
 .search{margin-bottom:12px;padding-left:42px!important;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%235B6478' stroke-width='1.75' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 14px center!important}
 .hint{margin-top:10px;font-size:14px;color:var(--muted)}
-input[type=text],input[type=search],input[type=datetime-local],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:#fff;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+input[type=text],input[type=search],input[type=url],input[type=datetime-local],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:#fff;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
 input::placeholder,textarea::placeholder{color:#6B7385}
 textarea{min-height:140px;resize:vertical}
 #bEmails{min-height:220px;font-family:SFMono-Regular,Consolas,Menlo,monospace;font-size:15px;line-height:1.6}
@@ -66,9 +72,50 @@ button:focus-visible,.chip:focus-within,.rec:focus-within{outline:2px solid var(
 .chip .count{color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
 .chip:has(input:checked){background:var(--brand-soft);border-color:var(--brand);color:var(--brand-press)}
 .chip:has(input:checked) .count{color:var(--brand-press)}
-.mode{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:20px;border-radius:14px;background:var(--page)}
-.mode button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px;border:0;border-radius:10px;background:transparent;color:var(--ink2);font-weight:600;font-size:15px}
-.mode button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(10,18,38,.08),0 2px 8px -2px rgba(10,18,38,.1)}
+.kinds{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;margin-bottom:20px;border-radius:14px;background:var(--page)}
+.kinds button{display:grid;justify-items:center;align-content:center;gap:4px;min-height:64px;padding:8px 2px;border:0;border-radius:10px;background:transparent;color:var(--ink2);font-weight:600;font-size:13px;line-height:1.2;transition:background-color .15s var(--ease),color .15s var(--ease)}
+.kinds button .ico{width:22px;height:22px}
+.kinds button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(10,18,38,.08),0 2px 8px -2px rgba(10,18,38,.1)}
+.kinds button.on .ico{color:var(--k)}
+.kinds button span{text-align:center}
+/* the smallest phones (320 px): a little less padding so four kinds fit on one line */
+@media (max-width:359px){
+ .card{padding:16px}
+ .days{margin:0 -16px;padding:2px 16px 4px;scroll-padding:0 16px}
+ .kinds{gap:2px;padding:3px}
+ .kinds button{padding:8px 0;font-size:12px}
+ .primary{padding-left:18px;font-size:15px}
+}
+.chips + input,.gap8{margin-top:8px}
+textarea.short{min-height:88px}
+/* resources: files and links */
+.drop{position:relative;display:grid;justify-items:center;gap:4px;padding:20px 16px;border:1.5px dashed var(--line2);border-radius:14px;background:var(--page);text-align:center;cursor:pointer;transition:border-color .15s var(--ease),background-color .15s var(--ease)}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop:focus-within{outline:2px solid var(--brand);outline-offset:2px}
+.drop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.drop .ico{width:26px;height:26px;color:var(--brand-press)}
+.drop b{font-size:16px;color:var(--brand-press)}
+.drop span{font-size:13px;color:var(--muted)}
+.files{display:grid;gap:8px;margin-top:8px}
+.files:empty{display:none}
+.file{display:flex;align-items:center;gap:12px;padding:10px 6px 10px 10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.file .badge{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:10px;background:var(--brand-soft);color:var(--brand-press);font-size:11px;font-weight:700;letter-spacing:.04em}
+.file .main{flex:1;min-width:0}
+.file b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .meta{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.file .meta.warn{color:var(--warn)}
+.file .meta.bad{color:var(--err)}
+.file .meta.good{color:var(--ok)}
+.file .meta .ico{width:14px;height:14px}
+.file .meta button{padding:0;border:0;background:none;color:var(--brand-press);font-weight:600;font-size:13px}
+.file .x{display:grid;place-items:center;flex:none;width:40px;height:40px;border:0;border-radius:20px;background:transparent;color:var(--muted)}
+.file .x:hover{background:var(--page);color:var(--ink)}
+.file.up .badge{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.addlink{display:flex;gap:8px;margin-top:8px}
+.addlink input{flex:1;min-width:0}
+.link-note{min-height:0;margin-top:6px;font-size:13px;color:var(--err)}
+.link-note:empty{display:none}
 .dot{display:inline-block;width:8px;height:8px;border-radius:4px;flex:none}
 .dot.live{background:var(--live)}
 .dot.recorded{background:var(--gold)}
@@ -228,7 +275,7 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
 <div class="aurora"></div>
 <header class="top">
   <div class="brand">Rimons IELTS <span>Class mail</span></div>
-  <nav class="seg"><button id="navSend" class="on" onclick="go('send')">Send</button><button id="navBatches" onclick="go('batches')">Batches</button></nav>
+  <nav class="seg" aria-label="Sections"><button id="navClass" class="on" onclick="go('class')">Class</button><button id="navNotice" onclick="go('notice')">Notice</button><button id="navBatches" onclick="go('batches')">Batches</button></nav>
 </header>
 
 <main>
@@ -245,14 +292,11 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
     </div>
 
     <div class="card">
-      <div class="mode" role="group" aria-label="Class type">
-        <button id="typeLive" class="on" onclick="setType('live')"><i class="dot live"></i>Live class</button>
-        <button id="typeRec" onclick="setType('recorded')"><i class="dot recorded"></i>Recorded class</button>
-      </div>
+      <div class="kinds" id="kinds" role="group" aria-label="Kind of email"></div>
       <p class="znote" id="zoomNote" hidden></p>
 
       <div id="liveZoom">
-        <label class="field" for="zTitle">Class title</label>
+        <label class="field" for="zTitle" id="zTitleLabel">Class title</label>
         <input type="text" id="zTitle" placeholder="Writing Task 2: opinion essays">
         <div class="when">
           <div><label class="field" id="dayLabel">Day</label>
@@ -262,15 +306,60 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
               <select id="hh" aria-label="Hour"></select><span class="colon" aria-hidden="true">:</span><select id="mm" aria-label="Minutes"></select><select id="ap" aria-label="AM or PM"><option>AM</option><option>PM</option></select>
             </div></div>
           <div><label class="field" id="lenLabel">Length</label>
-            <div class="chips" role="radiogroup" aria-labelledby="lenLabel">
-              <label class="chip"><input type="radio" name="minutes" value="60" checked><span>1 h</span></label>
-              <label class="chip"><input type="radio" name="minutes" value="90"><span>1.5 h</span></label>
-              <label class="chip"><input type="radio" name="minutes" value="120"><span>2 h</span></label>
-            </div></div>
+            <div class="chips" id="lenChips" role="radiogroup" aria-labelledby="lenLabel"></div></div>
+          <div id="whereRow"><label class="field" id="whereLabel">Where students take it</label>
+            <div class="chips" role="radiogroup" aria-labelledby="whereLabel">
+              <label class="chip" id="whereZoom"><input type="radio" name="where" value="zoom" checked><span>Zoom room</span></label>
+              <label class="chip"><input type="radio" name="where" value="link"><span>Test link</span></label>
+            </div>
+            <input type="url" id="testLink" placeholder="Paste the test link, such as the rimonsielts.com mock test" inputmode="url" aria-label="Test link"></div>
           <p class="when-sum" id="whenSum" hidden></p>
           <input type="hidden" id="start">
         </div>
-        <button class="link" onclick="usePaste(true)">Paste a Zoom invitation instead</button>
+        <button class="link" id="pasteLive" onclick="usePaste(true)">Paste a Zoom invitation instead</button>
+      </div>
+
+      <div id="remBox">
+        <label class="field">Remind them about</label>
+        <div class="recs" id="remList"></div>
+      </div>
+
+      <div id="resBox">
+        <label class="field" for="resTitle">Title</label>
+        <input type="text" id="resTitle" placeholder="Reading practice set">
+        <label class="field gap" id="filesLabel">Files and links</label>
+        <label class="drop" id="drop">
+          <input type="file" id="files" multiple aria-labelledby="filesLabel">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+          <b>Add files</b><span>PDF, audio, pictures, slides. Up to 20 MB each</span>
+        </label>
+        <div class="files" id="fileList"></div>
+        <div class="addlink"><input type="url" id="linkIn" placeholder="Or paste a link" inputmode="url" aria-label="Link"><button class="secondary" onclick="addLink()">Add</button></div>
+        <p class="link-note" id="linkNote" role="status"></p>
+        <label class="field gap" for="resNote">Note to students <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <textarea id="resNote" class="short" placeholder="Do Test 3 before Friday's class"></textarea>
+      </div>
+
+      <div id="breakBox">
+        <label class="field" id="offLabel">First day with no class</label>
+        <div class="days" id="offDays" role="radiogroup" aria-labelledby="offLabel"></div>
+        <label class="field gap" id="backLabel">Classes start again</label>
+        <div class="days" id="backDays" role="radiogroup" aria-labelledby="backLabel"></div>
+        <label class="field gap" id="reasonLabel">Reason <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <div class="chips" role="radiogroup" aria-labelledby="reasonLabel">
+          <label class="chip"><input type="radio" name="reason" value="Holiday"><span>Holiday</span></label>
+          <label class="chip"><input type="radio" name="reason" value="Break"><span>Break</span></label>
+          <label class="chip"><input type="radio" name="reason" value="Class cancelled"><span>Cancelled</span></label>
+        </div>
+        <label class="field gap" for="breakNote">Note <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <textarea id="breakNote" class="short" placeholder="Enjoy the break. Revise the Reading lessons."></textarea>
+      </div>
+
+      <div id="msgBox">
+        <label class="field" for="msgTitle">Title</label>
+        <input type="text" id="msgTitle" placeholder="December fees">
+        <label class="field gap" for="msgText">Message</label>
+        <textarea id="msgText" placeholder="Write it the way you would say it. Links become clickable."></textarea>
       </div>
 
       <div id="recPick">
@@ -288,7 +377,7 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
       <div id="titleWrap" class="gap"><label class="field" for="title">Class title <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="title" placeholder="Uses the Zoom topic"></div>
 
       <div class="state" id="state"></div>
-      <details>
+      <details id="tipWrap">
         <summary>Tip for students</summary>
         <input type="text" id="tip" placeholder="Consistency beats intensity. Progress over perfection." aria-label="Tip for students" style="margin:4px 0 4px">
       </details>
@@ -302,7 +391,7 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
       <ol class="steps" id="readySteps"></ol>
       <a class="primary" id="readyOpen" href="#" target="_blank" rel="noopener"><span id="readyOpenLabel">Open Gmail</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></a>
       <a class="link" id="readyWeb" href="#" target="_blank" rel="noopener">Open Gmail in the browser instead</a>
-      <button class="link" onclick="hideReady()">Make another class email</button>
+      <button class="link" onclick="hideReady()">Make another email</button>
     </div>
 
     <div class="card" id="previewCard">
@@ -346,12 +435,12 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
     <section id="detail" hidden>
     <p class="sub" id="dCount" style="margin:0 4px 12px"></p>
     <div class="card stats" id="dStats"></div>
-    <button class="primary" onclick="sendTo(detailName)"><span>Send a class to this batch</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></button>
+    <button class="primary" onclick="sendTo(detailName)"><span>Send an email to this batch</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></button>
     <div class="actions" style="margin-bottom:12px">
       <button class="secondary" onclick="openEdit(detailName)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>Edit emails</button>
       <button class="secondary" onclick="copyEmails(detailEmails)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy emails</button>
     </div>
-    <div class="card"><h2>Classes</h2><div id="dClasses"></div></div>
+    <div class="card"><h2>History</h2><div id="dClasses"></div></div>
   </section>
     <section id="edit" hidden>
     <div class="card">
@@ -373,9 +462,32 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
 </dialog>
 
 <script>
-let titleTouched = false, batches = [], zoomOn = false, recsOn = false, type = 'live', paste = { live: false, recorded: false }, recs = null, kit = null, timer, seq = 0;
+let titleTouched = false, batches = [], zoomOn = false, recsOn = false, kind = 'live', paste = { live: false, recorded: false }, recs = null, kit = null, timer, seq = 0;
+let res = [], links = [], off = '', backDay = '', remPick = '', lastReason = '', lenFor = '';
 let day = '', clock = '', stack = [], picked = '', detailName = '', detailEmails = [], editingName = '', lastCheck = { emails: [], skipped: [] }, checkTimer, checkSeq = 0;
 const $ = id => document.getElementById(id);
+// The kinds of email, grouped under the Class and Notice tabs. color = the dot and the active icon.
+const ICON = {
+  live: '<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  recorded: '<circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4z"/>',
+  reminder: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  test: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+  resources: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  noclass: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m14 14-4 4"/><path d="m10 14 4 4"/>',
+  message: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+};
+const KIND = {
+  live: { tab: 'class', label: 'Live class', color: '#16A34A' },
+  recorded: { tab: 'class', label: 'Recording', color: '#B5660A' },
+  reminder: { tab: 'class', label: 'Reminder', color: '#16A34A' },
+  test: { tab: 'notice', label: 'Mock test', color: '#7C3AED' },
+  resources: { tab: 'notice', label: 'Resources', color: '#2563EB' },
+  noclass: { tab: 'notice', label: 'No class', color: '#64748B' },
+  message: { tab: 'notice', label: 'Message', color: '#0A1226' },
+};
+const svg = (paths, cls) => '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + paths + '</svg>';
+const kindDot = k => '<i class="dot" style="background:' + (KIND[k] || KIND.live).color + '"></i>';
+
 const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many || one + 's');
 const hoursShort = m => !m ? '0m' : m < 60 ? m + 'm' : Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '');
 // Shrinks any stat figure that still does not fit its column (never below 14px); last resort is its short form.
@@ -415,19 +527,21 @@ const clock12 = t => { const [h, m] = t.split(':').map(Number); return ((h % 12)
 const CAL = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>';
 const CLOCK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
 
-function renderDays() {
-  const box = $('days'); box.innerHTML = '';
-  const now = new Date(), list = [];
-  for (let i = 0; i < 14; i++) list.push(ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + i)));
-  if (day && !list.includes(day)) list.push(day);
-  list.forEach((v, i) => {
+const addDay = (v, n) => { const [y, m, d] = v.split('-').map(Number); return ymd(new Date(y, m - 1, d + n)); };
+// A row of day cards (two weeks from `from`, default today) plus Other for the phone's calendar.
+function dayCards(id, value, onPick, from) {
+  const box = $(id); box.innerHTML = '';
+  const today = ymd(new Date()), list = [];
+  for (let i = 0; i < 14; i++) list.push(addDay(from || today, i));
+  if (value && !list.includes(value)) list.push(value);
+  list.forEach(v => {
     const [y, m, d] = v.split('-').map(Number);
     const l = document.createElement('label'); l.className = 'day';
-    l.innerHTML = '<input type="radio" name="day"><span class="wd"></span><span class="dn"></span><span class="mo"></span>';
-    const r = l.querySelector('input'); r.value = v; r.checked = v === day;
+    l.innerHTML = '<input type="radio"><span class="wd"></span><span class="dn"></span><span class="mo"></span>';
+    const r = l.querySelector('input'); r.name = id; r.value = v; r.checked = v === value;
     r.setAttribute('aria-label', WD[new Date(y, m - 1, d).getDay()] + ' ' + d + ' ' + MO[m - 1]);
-    r.onchange = () => { day = v; syncWhen(); };
-    l.querySelector('.wd').textContent = i === 0 ? 'Today' : WD[new Date(y, m - 1, d).getDay()];
+    r.onchange = () => onPick(v);
+    l.querySelector('.wd').textContent = v === today ? 'Today' : WD[new Date(y, m - 1, d).getDay()];
     l.querySelector('.dn').textContent = d;
     l.querySelector('.mo').textContent = MO[m - 1];
     box.append(l);
@@ -435,10 +549,29 @@ function renderDays() {
   const other = document.createElement('label'); other.className = 'day other';
   other.innerHTML = CAL + '<span class="mo">Other</span><input type="date" class="native" aria-label="Pick another date">';
   const inp = other.querySelector('input'); inp.min = list[0];
-  inp.onchange = () => { if (inp.value) { day = inp.value; renderDays(); syncWhen(); } };
+  inp.onchange = () => { if (inp.value) onPick(inp.value); };
   box.append(other);
   const sel = box.querySelector('input[type=radio]:checked');
   if (sel) sel.parentElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+function renderDays() { dayCards('days', day, v => { day = v; renderDays(); syncWhen(); }); }
+
+// Length chips: classes and tests have different usual lengths. The last one picked is kept.
+const LENGTHS = { live: [[60, '1 h'], [90, '1.5 h'], [120, '2 h']], test: [[60, '1 h'], [120, '2 h'], [165, '2 h 45 min']] };
+function renderLengths() {
+  const set = kind === 'test' ? 'test' : 'live';
+  if (lenFor === set) return;
+  lenFor = set;
+  const keep = read('len:' + set) || String(LENGTHS[set][set === 'test' ? 2 : 0][0]);
+  const box = $('lenChips'); box.innerHTML = '';
+  LENGTHS[set].forEach(([v, t]) => {
+    const l = document.createElement('label'); l.className = 'chip';
+    l.innerHTML = '<input type="radio" name="minutes"><span></span>';
+    const r = l.querySelector('input'); r.value = v; r.checked = String(v) === keep;
+    r.onchange = () => { store('len:' + set, String(v)); syncWhen(); };
+    l.querySelector('span').textContent = t;
+    box.append(l);
+  });
 }
 
 // Time is one field in three parts (hour : minutes AM/PM); each part opens the phone's own picker.
@@ -507,11 +640,20 @@ sheet.addEventListener('click', e => {
 });
 
 // ---- screens ----
+// Class and Notice share one screen; each tab remembers the kind used last.
 function go(view) {
-  ['send', 'batches'].forEach(v => { $(v).hidden = v !== view; });
-  $('navSend').classList.toggle('on', view === 'send');
-  $('navBatches').classList.toggle('on', view === 'batches');
-  if (view !== 'send') $('msg').hidden = true;
+  const send = view !== 'batches';
+  $('send').hidden = !send; $('batches').hidden = send;
+  [['navClass', 'class'], ['navNotice', 'notice'], ['navBatches', 'batches']].forEach(([id, v]) => $(id).classList.toggle('on', v === view));
+  $('msg').hidden = true;
+  if (send) {
+    store('tab', view);
+    if (KIND[kind].tab !== view) {
+      if (!$('readyCard').hidden) hideReady();
+      const k = read('kind:' + view);
+      setKind(KIND[k] && KIND[k].tab === view ? k : view === 'class' ? 'live' : 'test');
+    }
+  }
   if (view === 'batches') renderBatchList();
   window.scrollTo(0, 0);
 }
@@ -520,38 +662,182 @@ function go(view) {
 function current() { return picked; }
 function minutes() { const r = document.querySelector('input[name=minutes]:checked'); return r ? r.value : '60'; }
 function chosenRec() { const r = document.querySelector('input[name=rec]:checked'); return r && recs ? recs[Number(r.value)] : null; }
+// live and recorded can come from Zoom or from a pasted invitation/link; the other kinds have no source.
 function source() {
-  if (!zoomOn || paste[type] || (type === 'recorded' && !recsOn)) return 'paste';
+  if (kind !== 'live' && kind !== 'recorded') return '';
+  if (!zoomOn || paste[kind] || (kind === 'recorded' && !recsOn)) return 'paste';
   return 'zoom';
 }
+function testWhere() { const r = document.querySelector('input[name=where]:checked'); return zoomOn && r ? r.value : 'link'; }
+function reason() { const r = document.querySelector('input[name=reason]:checked'); return r ? r.value : ''; }
+const timed = () => kind === 'test' || (kind === 'live' && source() === 'zoom');
 function form() {
-  const liveZoom = type === 'live' && source() === 'zoom';
-  return { batch: current(), type, source: source(), title: liveZoom ? $('zTitle').value : $('title').value,
-    start: $('start').value, minutes: minutes(), invite: $('invite').value, tip: $('tip').value, rec: chosenRec() };
+  const src = source();
+  return {
+    batch: current(), type: kind, source: src, tip: $('tip').value,
+    title: timed() ? $('zTitle').value : kind === 'resources' ? $('resTitle').value : kind === 'message' ? $('msgTitle').value : $('title').value,
+    start: $('start').value, minutes: minutes(), invite: $('invite').value, rec: chosenRec(),
+    where: testWhere(), testLink: $('testLink').value,
+    classId: remPick,
+    files: res.filter(x => x.data).map(x => x.data), links: links.slice(),
+    note: kind === 'resources' ? $('resNote').value : $('breakNote').value,
+    from: off, back: backDay, reason: reason(),
+    message: $('msgText').value,
+  };
 }
 
-function setType(t) {
-  type = t; store('type', t); fillTitle();
-  $('typeLive').classList.toggle('on', t === 'live'); $('typeRec').classList.toggle('on', t === 'recorded');
-  $('typeLive').setAttribute('aria-pressed', t === 'live'); $('typeRec').setAttribute('aria-pressed', t === 'recorded');
-  applyMode();
+function renderKinds() {
+  const box = $('kinds'); box.innerHTML = '';
+  Object.keys(KIND).filter(k => KIND[k].tab === KIND[kind].tab).forEach(k => {
+    const b = document.createElement('button');
+    b.className = k === kind ? 'on' : ''; b.style.setProperty('--k', KIND[k].color);
+    b.setAttribute('aria-pressed', k === kind);
+    b.innerHTML = svg(ICON[k]) + '<span></span>';
+    b.querySelector('span').textContent = KIND[k].label;
+    b.onclick = () => { if (k !== kind) { if (!$('readyCard').hidden) hideReady(); setKind(k); } };
+    box.append(b);
+  });
 }
-function usePaste(on) { paste[type] = on; applyMode(); }
+function setKind(k) {
+  kind = k; store('kind:' + KIND[k].tab, k);
+  titleTouched = false; fillTitle();
+  renderKinds(); applyMode();
+}
+function usePaste(on) { paste[kind] = on; applyMode(); }
 function applyMode() {
   const src = source();
-  $('liveZoom').hidden = !(type === 'live' && src === 'zoom');
-  $('recPick').hidden = !(type === 'recorded' && src === 'zoom');
-  $('pasteBox').hidden = src === 'zoom';
-  $('backToPick').hidden = !(zoomOn && (type === 'live' || recsOn));
-  $('backToPick').textContent = type === 'live' ? 'Create the Zoom meeting from here instead' : 'Pick from Zoom recordings instead';
-  $('titleWrap').hidden = type === 'live' && src === 'zoom';
-  $('pasteLabel').textContent = type === 'live' ? 'Zoom invitation' : 'Recording link';
-  $('invite').placeholder = type === 'live'
+  $('liveZoom').hidden = !timed();
+  $('recPick').hidden = !(kind === 'recorded' && src === 'zoom');
+  $('pasteBox').hidden = src !== 'paste';
+  $('backToPick').hidden = !(zoomOn && (kind === 'live' || recsOn));
+  $('backToPick').textContent = kind === 'live' ? 'Create the Zoom meeting from here instead' : 'Pick from Zoom recordings instead';
+  $('titleWrap').hidden = !(kind === 'recorded' || (kind === 'live' && src === 'paste'));
+  $('pasteLabel').textContent = kind === 'live' ? 'Zoom invitation' : 'Recording link';
+  $('invite').placeholder = kind === 'live'
     ? 'In Zoom: Meetings › your class › Copy invitation, then paste it here'
     : 'Paste the recording share link (and its passcode, if it has one)';
-  if (type === 'recorded' && src === 'zoom' && recs === null) loadRecs();
+  $('zTitleLabel').textContent = kind === 'test' ? 'Test title' : 'Class title';
+  $('zTitle').placeholder = kind === 'test' ? 'Full mock test 3' : 'Writing Task 2: opinion essays';
+  $('pasteLive').hidden = kind !== 'live';
+  $('whereRow').hidden = kind !== 'test';
+  $('whereZoom').hidden = !zoomOn;
+  $('testLink').hidden = testWhere() !== 'link';
+  $('remBox').hidden = kind !== 'reminder';
+  $('resBox').hidden = kind !== 'resources';
+  $('breakBox').hidden = kind !== 'noclass';
+  $('msgBox').hidden = kind !== 'message';
+  $('tipWrap').hidden = kind === 'message';
+  $('zoomNote').hidden = !$('zoomNote').textContent || !['live', 'recorded', 'test'].includes(kind);
+  if (timed()) { renderLengths(); syncWhen(); }
+  if (kind === 'recorded' && src === 'zoom' && recs === null) loadRecs();
+  if (kind === 'reminder') renderRem();
+  if (kind === 'noclass') renderBreak();
   schedule(0);
 }
+
+// ---- reminder: pick one of the batch's upcoming classes; the email reuses its link ----
+function renderRem() {
+  const b = batches.find(x => x.name === picked);
+  const up = (b && b.upcoming) || [];
+  if (!up.some(u => u.id === remPick)) remPick = up[0] ? up[0].id : '';
+  const list = $('remList'); list.innerHTML = '';
+  if (!up.length) {
+    list.innerHTML = '<p class="empty">No upcoming class for this batch. Make the live class first, then remind them here</p>';
+    const mk = document.createElement('button'); mk.className = 'link'; mk.textContent = 'Make a live class'; mk.onclick = () => setKind('live');
+    list.append(mk);
+    return;
+  }
+  up.forEach(u => {
+    const l = document.createElement('label'); l.className = 'rec';
+    l.innerHTML = '<input type="radio" name="rem">' + kindDot(u.type) + '<div><b></b><span></span></div>';
+    const r = l.querySelector('input'); r.checked = u.id === remPick;
+    r.onchange = () => { remPick = u.id; schedule(0); };
+    l.querySelector('b').textContent = u.title;
+    l.querySelector('span').textContent = whenShort(u.start) + ' · ' + (u.type === 'test' ? 'Mock test' : 'Live class');
+    list.append(l);
+  });
+}
+
+// ---- no class: first day off and the day classes start again ----
+function renderBreak() {
+  if (!off) off = ymd(new Date());
+  if (!backDay || backDay <= off) backDay = addDay(off, 1);
+  dayCards('offDays', off, v => { off = v; renderBreak(); schedule(0); });
+  dayCards('backDays', backDay, v => { backDay = v; renderBreak(); schedule(0); }, addDay(off, 1));
+}
+// Reason is optional: tapping the chosen one again clears it.
+document.querySelectorAll('input[name=reason]').forEach(r => r.addEventListener('click', () => {
+  if (lastReason === r.value) { r.checked = false; lastReason = ''; } else lastReason = r.value;
+  schedule(0);
+}));
+
+// ---- resources: files upload to Drive as soon as they are picked; links are added as they are ----
+const MAX_FILE = 20 * 1024 * 1024;
+const fmtSize = b => b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + ' MB';
+const extOf = n => ((String(n).match(/\.([a-z0-9]{1,5})$/i) || [])[1] || 'file').toUpperCase().slice(0, 4);
+function addFiles(list) {
+  [...list].forEach(file => {
+    const item = { key: Math.random().toString(36).slice(2), name: file.name, size: file.size, status: 'up', data: null };
+    res.push(item);
+    if (file.size > MAX_FILE) { item.status = 'big'; return; }
+    const reader = new FileReader();
+    reader.onload = () => upload(item, file.type, String(reader.result).split(',')[1] || '');
+    reader.onerror = () => { item.status = 'err'; renderFiles(); };
+    reader.readAsDataURL(file);
+  });
+  $('files').value = '';
+  renderFiles(); schedule(0);
+}
+function upload(item, mime, b64) {
+  item.retry = () => { item.status = 'up'; renderFiles(); schedule(0); upload(item, mime, b64); };
+  call('uploadResource', [item.name, mime, b64], r => {
+    if (!res.includes(item)) return call('removeResource', [r.id], () => {}, null, () => {}); // removed while uploading
+    item.data = r; item.status = r.shared ? 'ok' : 'private'; renderFiles(); schedule(0);
+  }, null, () => { item.status = 'err'; renderFiles(); schedule(0); });
+}
+function removeFile(item) {
+  res = res.filter(x => x !== item);
+  if (item.data) call('removeResource', [item.data.id], () => {}, null, () => {});
+  renderFiles(); schedule(0);
+}
+function addLink() {
+  const u = ($('linkIn').value.match(/https?:\/\/\S+/) || [])[0];
+  $('linkNote').textContent = u ? '' : 'That is not a link yet. It starts with https://';
+  if (!u) return;
+  links.push(u); $('linkIn').value = '';
+  renderFiles(); schedule(0);
+}
+const STATUS = {
+  up: ['', 'Uploading…'],
+  ok: ['good', 'Ready'],
+  private: ['warn', 'Ready, but Drive did not allow "anyone with the link". Students may not open it'],
+  err: ['bad', 'Upload failed'],
+  big: ['bad', 'Over 20 MB. Put it in Google Drive and paste its link'],
+};
+function renderFiles() {
+  const box = $('fileList'); box.innerHTML = '';
+  const row = (badge, name, metaCls, meta, onRemove, retry, up) => {
+    const el = document.createElement('div'); el.className = 'file' + (up ? ' up' : '');
+    el.innerHTML = '<span class="badge"></span><div class="main"><b></b><span class="meta"></span></div><button class="x" aria-label="Remove">' + svg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>') + '</button>';
+    el.querySelector('.badge').textContent = badge;
+    el.querySelector('b').textContent = name;
+    const m = el.querySelector('.meta'); m.className = 'meta ' + metaCls; m.textContent = meta;
+    if (retry) { const b = document.createElement('button'); b.textContent = 'Try again'; b.onclick = retry; m.append(' · ', b); }
+    el.querySelector('.x').setAttribute('aria-label', 'Remove ' + name);
+    el.querySelector('.x').onclick = onRemove;
+    box.append(el);
+  };
+  res.forEach(x => {
+    const [cls, text] = STATUS[x.status];
+    row(extOf(x.name), x.name, cls, (x.status === 'big' ? '' : fmtSize(x.size) + ' · ') + text, () => removeFile(x), x.status === 'err' && x.retry, x.status === 'up');
+  });
+  links.forEach((u, i) => row('LINK', u.replace(/^https?:\/\/(www\.)?/, ''), '', 'Link', () => { links.splice(i, 1); renderFiles(); schedule(0); }));
+}
+$('files').addEventListener('change', e => addFiles(e.target.files));
+['dragenter', 'dragover'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, () => $('drop').classList.remove('over')));
+$('drop').addEventListener('drop', e => { e.preventDefault(); addFiles(e.dataTransfer.files); });
+$('linkIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } });
 
 function loadRecs() {
   recs = [];
@@ -580,19 +866,21 @@ function whenShort(s) {
 }
 
 // Automatic, predictable title from the batch and its next class number. Editing it keeps his text.
+const AUTO = { live: 'Class', recorded: 'Recording', test: 'Mock test', resources: 'Resources' };
 function autoTitle() {
   const b = batches.find(x => x.name === picked);
-  if (!b || !b.next) return '';
-  return type === 'live' ? b.name + ' · Class ' + b.next.live : b.name + ' · Recording ' + b.next.recorded;
+  if (!b || !b.next || !AUTO[kind]) return '';
+  return b.name + ' · ' + AUTO[kind] + ' ' + b.next[kind];
 }
+const TITLES = ['zTitle', 'title', 'resTitle'];
 function fillTitle() {
   if (titleTouched) return;
   const t = autoTitle();
-  $('zTitle').value = t; $('title').value = t;
+  TITLES.forEach(id => { $(id).value = t; });
 }
-['zTitle', 'title'].forEach(id => $(id).addEventListener('input', () => {
+TITLES.forEach(id => $(id).addEventListener('input', () => {
   titleTouched = $(id).value.trim() !== '';
-  $(id === 'zTitle' ? 'title' : 'zTitle').value = $(id).value;
+  TITLES.forEach(o => { if (o !== id) $(o).value = $(id).value; });
   if (!titleTouched) fillTitle();
 }));
 
@@ -602,7 +890,7 @@ function showZoomNote(z) {
   n.className = 'znote' + (z.problem ? ' warn' : '');
   n.textContent = z.problem ? 'Zoom problem: ' + z.problem + ' Until it is fixed, paste the Zoom invitation.'
     : !z.connected ? 'Zoom is not connected yet, so paste the Zoom invitation or link. The setup guide shows how to connect it.' : '';
-  n.hidden = !n.textContent;
+  n.hidden = !n.textContent || !['live', 'recorded', 'test'].includes(kind);
 }
 
 // ---- emergency copy: the whole designed email, the subject and the students, for pasting into Gmail by hand ----
@@ -699,12 +987,12 @@ addEventListener('resize', () => fitFrame($('frame')));
 const samples = {};
 let sampleShown = '';
 function showSample() {
-  const t = type;
+  const t = kind;
   if (sampleShown === t) return;
   const put = html => {
-    if (type !== t || !$('sendBar').hidden) return;
+    if (kind !== t || !$('sendBar').hidden) return;
     sampleShown = t; $('sampleTag').hidden = false;
-    $('subject').textContent = 'Fill in the class above to see the real email';
+    $('subject').textContent = 'Fill in the form above to see the real email';
     setFrame($('frame'), html);
   };
   if (samples[t]) put(samples[t]); else call('sampleEmail', [t], h => { samples[t] = h; put(h); }, null, () => {});
@@ -717,15 +1005,26 @@ function schedule(delay) {
   const invalid = t => { hidePreview(); state(t); };
   const f = form();
   if (!f.batch) return invalid(batches.length ? 'Pick a batch first' : '');
-  if (f.source === 'zoom' && type === 'live') {
+  if (timed()) {
     if (!f.title.trim()) return invalid('Add a title to see the email');
     if (new Date(f.start) < new Date()) return invalid('That time has already passed. Pick a later time');
-  } else if (f.source === 'zoom') {
+    if (kind === 'test' && f.where === 'link' && !/https?:\/\//.test(f.testLink)) return invalid('Paste the test link to see the email');
+  } else if (kind === 'recorded' && f.source === 'zoom') {
     if (!f.rec) return invalid(recs && recs.length ? 'Tap a recording to see the email' : '');
-  } else {
+  } else if (f.source === 'paste') {
     const text = f.invite.trim();
     if (!text) return invalid('');
     if (!/https?:\/\//.test(text)) return invalid('No link in this yet. Paste the whole thing');
+  } else if (kind === 'reminder') {
+    if (!f.classId) return invalid('');
+  } else if (kind === 'resources') {
+    if (res.some(x => x.status === 'up')) return invalid('Uploading… the email shows when the files are ready');
+    if (!f.files.length && !f.links.length) return invalid('Add a file or a link to see the email');
+    if (!f.title.trim()) return invalid('Add a title to see the email');
+  } else if (kind === 'noclass') {
+    if (!f.from || !f.back) return invalid('');
+  } else if (kind === 'message') {
+    if (!f.title.trim() || !f.message.trim()) return invalid('Write a title and a message to see the email');
   }
   $('sendBtn').disabled = true;
   state('Making the preview…');
@@ -754,14 +1053,16 @@ function doSend() {
     if (win && !win.closed) { win.location.href = r.draftUrl || 'https://mail.google.com/mail/?view=cm&fs=1'; opened = true; }
     $('msg').hidden = true;
     showReady(r, opened);
-    ['invite', 'title', 'zTitle', 'tip'].forEach(id => { $(id).value = ''; });
+    ['invite', 'title', 'zTitle', 'tip', 'testLink', 'resTitle', 'resNote', 'linkIn', 'breakNote', 'msgTitle', 'msgText'].forEach(id => { $(id).value = ''; });
     titleTouched = false;
+    res = []; links = []; renderFiles();
+    off = ''; backDay = ''; remPick = ''; lastReason = '';
     resetWhen();
-    document.querySelectorAll('input[name=rec]').forEach(r => { r.checked = false; });
+    document.querySelectorAll('input[name=rec],input[name=reason]').forEach(r => { r.checked = false; });
     refresh();
   }, $('sendBtn'), e => { if (win) win.close(); say(e.message || String(e), false); });
 }
-function sendTo(name) { closeSheet(); store('lastBatch', name); renderChips(name); fillTitle(); go('send'); schedule(0); }
+function sendTo(name) { closeSheet(); store('lastBatch', name); renderChips(name); fillTitle(); go(KIND[kind].tab); applyMode(); }
 
 // Batches arrive most recently used first. Send shows the top few; search finds the rest.
 const SHOW = 6;
@@ -780,7 +1081,7 @@ function renderChips(pick) {
     const l = document.createElement('label'); l.className = 'chip';
     const r = document.createElement('input'); r.type = 'radio'; r.name = 'batch'; r.value = b.name;
     r.checked = b.name === picked;
-    r.onchange = () => { picked = b.name; store('lastBatch', b.name); fillTitle(); schedule(0); };
+    r.onchange = () => { picked = b.name; store('lastBatch', b.name); fillTitle(); if (kind === 'reminder') renderRem(); schedule(0); };
     const n = document.createElement('span'); n.textContent = b.name;
     const c = document.createElement('span'); c.className = 'count'; c.textContent = b.count;
     l.append(r, n, c); box.append(l);
@@ -842,12 +1143,14 @@ function renderDetail(name) {
     });
     fitStats();
     const list = $('dClasses'); list.innerHTML = '';
-    if (!d.classes.length) { list.innerHTML = '<p class="empty">No classes sent to this batch yet</p>'; return; }
+    if (!d.classes.length) { list.innerHTML = '<p class="empty">Nothing sent to this batch yet</p>'; return; }
     d.classes.forEach(c => {
       const row = document.createElement('div'); row.className = 'row';
-      row.innerHTML = '<i class="dot ' + c.type + '"></i><div class="main"><b></b><span class="meta"></span></div><div class="len"><b></b><span></span></div>';
+      row.innerHTML = kindDot(c.type) + '<div class="main"><b></b><span class="meta"></span></div><div class="len"><b></b><span></span></div>';
       row.querySelector('.main b').textContent = c.title;
-      row.querySelector('.main .meta').textContent = c.when + ' · ' + (c.type === 'live' ? 'Live' : 'Recorded');
+      const back = /^back (\d{4}-\d{2}-\d{2})$/.exec(c.note || '');
+      row.querySelector('.main .meta').textContent = c.when.replace(/, 12:00 AM$/, '') + ' · ' + (KIND[c.type] || KIND.live).label + (back ? ' · back ' + whenShort(back[1] + 'T00:00').replace(/, 12:00 AM$/, '') : '');
+      if (!['live', 'recorded', 'test'].includes(c.type)) { list.append(row); return; }
       const len = c.actual || c.planned;
       row.querySelector('.len b').textContent = !c.ended ? 'Upcoming' : len ? hours(len) : '';
       row.querySelector('.len span').textContent = !c.ended ? (c.planned ? hours(c.planned) + ' planned' : '')
@@ -933,9 +1236,11 @@ function refresh(then) {
     renderChips();
     if (first) {
       first = false;
-      setType(read('type') === 'recorded' ? 'recorded' : 'live');
+      const t = read('tab') === 'notice' ? 'notice' : 'class', k = read('kind:' + t);
+      setKind(KIND[k] && KIND[k].tab === t ? k : t === 'class' ? 'live' : 'test');
+      go(t);
       if (!batches.length) openEdit('');
-    } else schedule(0);
+    } else applyMode();
     if (!$('batches').hidden) renderBatchList();
     if (then) then();
   });
@@ -943,10 +1248,8 @@ function refresh(then) {
 // Touching the form after a draft was made starts the next class email.
 ['input', 'change'].forEach(ev => $('send').addEventListener(ev, e => { if (!$('readyCard').hidden && !$('readyCard').contains(e.target)) hideReady(); }, true));
 $('invite').addEventListener('input', () => schedule(500));
-$('zTitle').addEventListener('input', () => schedule(600));
-$('title').addEventListener('input', () => schedule(600));
-$('tip').addEventListener('input', () => schedule(600));
-document.querySelectorAll('input[name=minutes]').forEach(r => r.addEventListener('change', syncWhen));
+['zTitle', 'title', 'tip', 'resTitle', 'resNote', 'breakNote', 'msgTitle', 'msgText', 'testLink'].forEach(id => $(id).addEventListener('input', () => schedule(600)));
+document.querySelectorAll('input[name=where]').forEach(r => r.addEventListener('change', () => { $('testLink').hidden = testWhere() !== 'link'; schedule(0); }));
 day = ymd(new Date()); renderDays(); buildClock(); syncWhen();
 $('bEmails').addEventListener('input', runCheck);
 $('batchSearch').addEventListener('input', () => renderChips());

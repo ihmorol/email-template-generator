@@ -1,15 +1,29 @@
 # Rimons IELTS class mail
 
-A private web page, made for the phone, that sends each class email to a whole batch from your own Gmail and keeps a record of every class. Free.
+A private web page, made for the phone, that sends class emails and notices to a whole batch from your own Gmail and keeps a record of everything sent. Free.
 
 ## What it does
 
-**Send**
+Three tabs at the top: **Class**, **Notice** and **Batches**. Class and Notice work the same way: pick the batch, pick the kind of email, fill one or two things, check the preview, tap **Open in Gmail**.
+
+| Tab | Kind | What you fill in | What students get |
+|---|---|---|---|
+| Class | **Live class** | title (automatic), day, time, length | Zoom link, meeting ID and passcode |
+| Class | **Recording** | tap the Zoom recording, or paste a link | the recording link |
+| Class | **Reminder** | nothing: it picks the batch's next class | "Starts today at 8:00 PM" with the same Zoom link |
+| Notice | **Mock test** | title (automatic), day, time, length, Zoom room or test link | time, length, link, and a short "before the test" checklist |
+| Notice | **Resources** | add files (PDF, audio, pictures, slides) and links, an optional note | each file with **Open** and **Download** buttons |
+| Notice | **No class** | first day off, the day classes start again, reason (optional) | "No class from … to …" and when classes start again |
+| Notice | **Message** | a title and a message | your message, links clickable |
+
+Resources: each file uploads to Google Drive as soon as you pick it (up to 20 MB each; for bigger files, put them in Drive and paste the link). Files go in one Drive folder, **Rimons IELTS class resources**, shared as "anyone with the link can view", so students open them on any phone without signing in. Removing a file from the list moves it to the Drive bin.
+
+**Class emails, step by step**
 1. Pick the batch.
-2. Pick **Live class** or **Recorded class**.
+2. Pick **Live class** or **Recording**.
    - **Live class:** type the title, pick the day, time and length. When you tap **Open in Gmail**, the Zoom meeting is created on your Zoom account (it shows in the Zoom app on your Mac and phone) and its link, meeting ID and passcode go into the email.
    - **Recorded class:** tap the recording from your recent Zoom cloud recordings. Or tap **Paste a link instead** for a YouTube, Drive or other link.
-   - Every class gets an automatic title from its batch and the next class number, such as **Batch 82 · Class 14** or **Batch 82 · Recording 6**. Add to it if you like (": Writing Task 2"); clearing it brings the automatic title back.
+   - Every class gets an automatic title from its batch and the next number, such as **Batch 82 · Class 14**, **Batch 82 · Recording 6** or **Batch 82 · Mock test 2**. Add to it if you like (": Writing Task 2"); clearing it brings the automatic title back.
 3. Check the email preview and tap **Open in Gmail**. The page saves the designed email as a **Gmail draft** with every student in BCC (nobody sees the other emails). Nothing is sent yet.
    - **On a computer:** Gmail opens in a new tab with that draft open. Check it and press **Send**.
    - **On a phone:** tap **Open Gmail app**, open **Drafts**, tap the email and press **Send**. (A phone link can open the Gmail app but not one particular draft, so the Drafts step stays.)
@@ -23,9 +37,9 @@ A private web page, made for the phone, that sends each class email to a whole b
 **Batches**
 - One list of all batches, most recently used first, with a search box. One **New batch** button, and **Details** and **Edit** on each batch.
 - Details, Edit and New batch slide up from the bottom and cover most of the screen. The **×** at the top goes back one step (Edit → Details → closed); tapping the dimmed area closes it.
-- On **Send**, the 6 most recently used batches show as buttons; search finds any other. The day is picked from a row of day cards (or **Other** for the phone's calendar), the time from one field: hour : minutes AM/PM.
+- On **Class** and **Notice**, the 6 most recently used batches show as buttons; search finds any other. The day is picked from a row of day cards (or **Other** for the phone's calendar), the time from one field: hour : minutes AM/PM.
 - **Edit:** paste the emails in any form: one per line, commas, spaces, semicolons, copied from Gmail or WhatsApp, even stuck together with no space. While you paste, the page says how many emails it found and lists any it could not read, so you can fix them before saving. If a save fails, your text stays in the box. The saved list shows one email per line, and **Copy all emails** copies them with commas, ready for Gmail or anywhere else.
-- **Details:** how many classes the batch has had, how many live and recorded, and the total time. Below that, every class with its date and length. For live classes the real length and how many joined come from Zoom after the class ends. Upcoming classes are listed but not counted yet.
+- **Details:** how many classes the batch has had, how many live and recorded, and the total time (notices are not counted as classes). Below that, the history: every email sent to the batch with its date, and the length of each class. For live classes the real length and how many joined come from Zoom after the class ends. Upcoming classes are listed but not counted yet.
 
 Everything is stored in one Google Sheet the page makes in your Drive, called **Rimons IELTS class mail data**. You never need to open it, but it is there as a backup and you can look at it any time.
 
@@ -44,7 +58,7 @@ Do this while signed in to the Gmail account the emails should come **from**.
    - Execute as: **Me**
    - Who has access: **Only myself**
    - Click **Deploy**.
-7. Google asks for permission: create Gmail drafts as you, and make and edit the data sheet in your Drive. Click **Authorize access** and pick your account. Google shows "Google hasn't verified this app" because you wrote it yourself. Click **Advanced → Go to Class mail**, then **Allow**.
+7. Google asks for permission: create Gmail drafts as you, make and edit the data sheet in your Drive, and save resource files in your Drive. Click **Authorize access** and pick your account. Google shows "Google hasn't verified this app" because you wrote it yourself. Click **Advanced → Go to Class mail**, then **Allow**.
 8. Copy the **Web app URL**. Open it on your phone (signed in to the same Google account) and use **Add to Home screen** so it opens like an app.
 
 ### A test copy first
@@ -89,6 +103,7 @@ Zoom limits to know: the recordings list needs a paid Zoom plan (Pro or higher) 
 - The final Send happens in Gmail, so normal Gmail limits apply: about 500 recipients a day and 500 per email on a free Gmail account (2,000 on Google Workspace). The page itself sends nothing.
 - The class is added to the batch's history when the draft is made. If you delete the draft instead of sending it, the class still shows in the history (and a live class's Zoom meeting still exists).
 - A batch can hold about 1,700 emails.
+- Resource files: up to 20 MB each from the page. On a Google Workspace account whose admin blocks "anyone with the link" sharing, the page says so next to the file.
 - Recorded class lists cloud recordings from the last 30 days. Older ones: paste the link.
 - Only classes sent from this page are tracked. A meeting made straight in Zoom is not linked to a batch.
 
