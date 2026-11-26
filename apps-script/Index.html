@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap">
+<style>
+:root{--page:#F4F6FB;--card:#fff;--ink:#0A1226;--ink2:#3B4660;--muted:#5B6478;--line:rgba(10,18,38,.08);--line2:rgba(10,18,38,.18);
+--brand:#2563EB;--brand-press:#1D4ED8;--brand-soft:#EAF0FF;--gold:#B5660A;--live:#16A34A;--ok:#15803D;--ok-soft:#E7F6EC;--warn:#92400E;--warn-soft:#FEF3E2;--err:#B91C1C;--err-soft:#FDECEC;
+--shadow:0 1px 2px rgba(10,18,38,.06),0 8px 24px -8px rgba(10,18,38,.12);--ease:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:16px;line-height:1.5;color:var(--ink);background:var(--page);caret-color:var(--brand);accent-color:var(--brand)}
+::selection{background:#C7D7FE;color:var(--ink)}
+.aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+ radial-gradient(60% 40% at 0% 0%,rgba(37,99,235,.18),transparent 70%),
+ radial-gradient(50% 35% at 100% 10%,rgba(56,189,248,.20),transparent 70%),
+ radial-gradient(60% 40% at 80% 100%,rgba(245,185,66,.18),transparent 70%),var(--page)}
+h1,h2{margin:0;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+h1{font-size:24px}
+h2{font-size:18px;margin-bottom:12px}
+p{margin:0}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* frame */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:600px;margin:0 auto;padding:16px 16px 8px}
+.brand{display:grid;font-weight:700;font-size:18px;line-height:1.25;letter-spacing:-.02em;white-space:nowrap}
+.brand span{color:var(--muted);font-weight:400;font-size:14px;letter-spacing:0}
+.seg{display:flex;gap:4px;padding:4px;border-radius:24px;background:rgba(255,255,255,.75);box-shadow:var(--shadow)}
+.seg button{min-height:40px;padding:8px 16px;border:0;border-radius:20px;background:transparent;color:var(--ink2);font-weight:600;font-size:15px}
+.seg button.on{background:var(--ink);color:#fff}
+main{max-width:600px;margin:0 auto;padding:8px 16px 16px}
+main section > .card:last-child{margin-bottom:0}
+.card{background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:12px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 4px 16px}
+.sub{color:var(--muted);font-size:15px;margin-top:4px}
+
+/* controls */
+label.field{display:block;font-weight:600;font-size:15px;margin:0 0 8px}
+.gap{margin-top:16px}
+.search{margin-bottom:12px;padding-left:42px!important;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%235B6478' stroke-width='1.75' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 14px center!important}
+.hint{margin-top:10px;font-size:14px;color:var(--muted)}
+input[type=text],input[type=search],input[type=datetime-local],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:#fff;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+input::placeholder,textarea::placeholder{color:#6B7385}
+textarea{min-height:140px;resize:vertical}
+#bEmails{min-height:220px;font-family:SFMono-Regular,Consolas,Menlo,monospace;font-size:15px;line-height:1.6}
+input:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,.chip:focus-within,.rec:focus-within{outline:2px solid var(--brand);outline-offset:2px}
+.primary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:6px 6px 6px 22px;border:0;border-radius:28px;background:var(--brand);color:#fff;font-size:17px;font-weight:600;text-align:left;transition:background-color .15s var(--ease),transform .12s var(--ease)}
+.primary .ring{display:grid;place-items:center;width:44px;height:44px;border-radius:22px;background:rgba(255,255,255,.18)}
+.primary:active,.secondary:active{transform:scale(.98)}
+.primary:disabled{opacity:.5;cursor:default}
+.busy .ring .ico{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid var(--line2);border-radius:12px;background:#fff;color:var(--ink);font-weight:600;font-size:15px;white-space:nowrap}
+.secondary:disabled{opacity:.5}
+.link{min-height:44px;padding:8px 0;border:0;background:transparent;color:var(--brand-press);font-weight:600;font-size:15px}
+.danger{color:var(--err)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 16px;border:1px solid var(--line2);border-radius:22px;background:#fff;font-weight:600;font-size:15px;cursor:pointer;transition:background-color .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.chip input,.rec input{position:absolute;opacity:0;pointer-events:none}
+.chip .count{color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+.chip:has(input:checked){background:var(--brand-soft);border-color:var(--brand);color:var(--brand-press)}
+.chip:has(input:checked) .count{color:var(--brand-press)}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:20px;border-radius:14px;background:var(--page)}
+.mode button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px;border:0;border-radius:10px;background:transparent;color:var(--ink2);font-weight:600;font-size:15px}
+.mode button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(10,18,38,.08),0 2px 8px -2px rgba(10,18,38,.1)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:4px;flex:none}
+.dot.live{background:var(--live)}
+.dot.recorded{background:var(--gold)}
+.when{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:16px}
+.days{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:2px 20px 4px;scroll-snap-type:x proximity;scroll-padding:0 20px}
+.days::-webkit-scrollbar{display:none}
+.day{position:relative;flex:none;display:grid;justify-items:center;align-content:center;gap:2px;width:60px;min-height:76px;padding:8px 0;border:1px solid var(--line2);border-radius:14px;background:#fff;cursor:pointer;scroll-snap-align:start;transition:background-color .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.day input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+.day .wd{font-size:13px;font-weight:600;color:var(--muted)}
+.day .dn{font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.day .mo{font-size:12px;color:var(--muted)}
+.day:has(input[type=radio]:checked){background:var(--brand);border-color:var(--brand);color:#fff}
+.day:has(input[type=radio]:checked) .wd,.day:has(input[type=radio]:checked) .mo{color:rgba(255,255,255,.85)}
+.day:focus-within{outline:2px solid var(--brand);outline-offset:2px}
+.day.other{color:var(--brand-press);border-style:dashed}
+.day.other .mo{color:var(--brand-press);font-weight:600;font-size:13px}
+.chip.other{color:var(--brand-press);border-style:dashed}
+.clock{display:inline-flex;align-items:center;gap:2px;padding:4px;border:1px solid var(--line2);border-radius:12px;background:#fff;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.clock:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.clock select{-webkit-appearance:none;appearance:none;min-height:48px;padding:8px 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;text-align:center;text-align-last:center;cursor:pointer;transition:background-color .15s var(--ease)}
+.clock select:hover{background:var(--page)}
+.clock select:focus{outline:none;background:var(--brand-soft)}
+.clock #ap{margin-left:4px;font-size:17px;color:var(--brand-press)}
+.clock .colon{font-size:22px;font-weight:700;color:var(--muted)}
+.native{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer;font-size:16px}
+.when-sum{display:flex;align-items:center;gap:8px;margin:0;padding:12px 14px;border-radius:12px;background:var(--brand-soft);color:var(--brand-press);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.state:empty{display:none}
+.state{min-height:22px;margin-top:8px;font-size:14px;color:var(--muted)}
+details{margin-top:4px}
+details summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;font-weight:600;font-size:15px;color:var(--brand-press);cursor:pointer}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'';width:8px;height:8px;border-right:1.75px solid currentColor;border-bottom:1.75px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s var(--ease)}
+details[open] summary::after{transform:rotate(225deg)}
+
+/* recordings picker */
+.recs{display:grid;gap:8px}
+.rec{position:relative;display:flex;align-items:center;gap:12px;min-height:56px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;cursor:pointer}
+.rec:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.rec b{display:block;font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.rec span{font-size:14px;color:var(--muted)}
+
+/* messages */
+.msg{padding:12px 14px;border-radius:12px;font-weight:600;font-size:15px;margin:0 0 12px}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.err{background:var(--err-soft);color:var(--err)}
+.check{margin-top:8px;font-size:14px}
+.check .good{color:var(--ok);font-weight:600}
+.check .bad{margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--warn)}
+.check .bad code{font-family:SFMono-Regular,Consolas,Menlo,monospace;font-size:13px;overflow-wrap:anywhere}
+
+/* preview + send */
+.subject{font-size:14px;color:var(--muted);margin-bottom:12px;overflow-wrap:anywhere}
+.subject b{color:var(--ink);font-weight:600}
+iframe{display:block;width:100%;height:480px;border:0;border-radius:14px;background:var(--page)}
+.tag{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--warn-soft);color:var(--warn);font-size:12px;font-weight:600;letter-spacing:0;vertical-align:3px}
+
+.sendbar{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--page) 70%,transparent)}
+
+/* lists */
+.row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.row:first-child{padding-top:0}
+.row:last-child{border-bottom:0;padding-bottom:0}
+.row .main{flex:1;min-width:0}
+.row .main b{display:block;font-weight:600;overflow-wrap:anywhere}
+.row .meta{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row .open{flex:1;min-width:0;display:block;padding:0;border:0;background:transparent;text-align:left;color:inherit}
+.row .open b{display:block;font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.row .open .meta{display:block;margin-top:2px}
+.row .len{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .len b{font-weight:600}
+.row .len span{display:block;font-size:13px;color:var(--muted)}
+.empty{color:var(--muted);font-size:15px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,.8fr) minmax(0,1.1fr) minmax(0,1.3fr);padding:0;overflow:hidden;container-type:inline-size}
+.stat{min-width:0;padding:14px clamp(6px,3cqi,24px);border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat .n{overflow:hidden;white-space:nowrap;font-size:clamp(18px,6.4cqi,32px);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .l{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;font-size:clamp(12px,3.6cqi,15px);color:var(--muted)}
+@container (max-width:440px){.stat .l .dot{display:none}}
+
+@media (min-width:960px){
+ .top,main{max-width:1080px;padding-left:24px;padding-right:24px}
+ .top{padding-top:24px;padding-bottom:16px}
+ .card{padding:24px}
+ #send{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;align-items:start}
+ #send>*{grid-column:1}
+ #send>#previewCard{grid-column:2;grid-row:1 / span 5;position:sticky;top:24px}
+ #batches{max-width:640px;margin:0 auto}
+ .days{margin:0 -24px;padding:2px 24px 4px}
+}
+/* bottom sheet */
+body:has(dialog[open]){overflow:hidden}
+.sheet{position:fixed;inset:auto 0 0 0;width:100%;max-width:none;height:auto;max-height:90dvh;margin:0;padding:0;border:0;border-radius:20px 20px 0 0;background:var(--page);color:var(--ink);box-shadow:0 -8px 32px -8px rgba(10,18,38,.25);overflow:hidden}
+.sheet[open]{display:flex;flex-direction:column;animation:sheetUp .32s var(--ease)}
+.sheet.closing{animation:sheetDown .2s ease-in forwards}
+.sheet::backdrop{background:rgba(10,18,38,.45);animation:fadeIn .32s var(--ease)}
+.sheet.closing::backdrop{animation:fadeOut .2s ease-in forwards}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+@keyframes sheetDown{to{transform:translateY(100%)}}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.98)}}
+@keyframes popOut{to{opacity:0;transform:translateY(16px) scale(.98)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes fadeOut{to{opacity:0}}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 20px;background:#fff;border-bottom:1px solid var(--line)}
+.sheet-head h2{flex:1;min-width:0;margin:0;font-size:20px;overflow-wrap:anywhere}
+.close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:0;border-radius:22px;background:var(--page);color:var(--ink);transition:background-color .15s var(--ease)}
+.close:active{transform:scale(.94)}
+.close .ico{width:20px;height:20px;stroke-width:2}
+.sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+/* the last thing in a sheet sits the same distance from the bottom as the first from the top */
+#detail > .card:last-child,#edit > .card{margin-bottom:0}
+#delBtn{display:block;margin:8px auto 0}
+@media (min-width:960px){
+ .sheet{inset:0;margin:auto;height:fit-content;width:min(640px,calc(100% - 48px));border-radius:20px;box-shadow:0 24px 64px -16px rgba(10,18,38,.35)}
+ .sheet[open]{animation-name:pop}
+ .sheet.closing{animation-name:popOut}
+ .sheet-body{padding:20px 24px}
+}
+.ready{text-align:left}
+.ready-mark{display:grid;place-items:center;width:44px;height:44px;margin-bottom:12px;border-radius:22px;background:var(--ok-soft);color:var(--ok)}
+.ready-mark .ico{width:22px;height:22px;stroke-width:2.25}
+.ready-text{color:var(--ink2);margin:-4px 0 12px}
+.ready-error{margin:-6px 0 12px;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.steps{margin:0 0 16px;padding-left:22px;color:var(--ink2)}
+.steps li{padding:2px 0}
+.steps.single{list-style:none;padding-left:0}
+.steps b{color:var(--ink);font-weight:600}
+a.primary{text-decoration:none}
+a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4px}
+.ready .link{display:block;width:100%;text-align:center}
+@media (max-width:959px){
+ #previewCard{margin:24px -16px 0;padding:0;background:transparent;box-shadow:none;border-radius:0}
+ #previewCard h2,#previewCard .subject{padding:0 20px}
+ #previewCard iframe{border-radius:0}
+}
+.znote{margin:-8px 0 16px;padding:10px 12px;border-radius:12px;font-size:14px;background:var(--page);color:var(--ink2)}
+.znote.warn{background:var(--warn-soft);color:var(--warn);font-weight:600}
+.ready-mark.warn{background:var(--warn-soft);color:var(--warn)}
+.copykit{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.copy-title{font-weight:600;font-size:15px;margin-bottom:10px}
+.copy-hint{color:var(--muted);font-size:14px;margin:2px 0 12px}
+.copy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.copy-grid .wide-btn{grid-column:1 / -1}
+.copy-grid .secondary{white-space:normal}
+.copy-note{min-height:20px;margin-top:8px;font-size:14px;font-weight:600;color:var(--ok)}
+@media (max-width:959px){#previewCard .copykit{margin:16px 20px 0}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<header class="top">
+  <div class="brand">Rimons IELTS <span>Class mail</span></div>
+  <nav class="seg"><button id="navSend" class="on" onclick="go('send')">Send</button><button id="navBatches" onclick="go('batches')">Batches</button></nav>
+</header>
+
+<main>
+  <div id="msg" class="msg" role="status" hidden></div>
+
+  <!-- SEND -->
+  <section id="send">
+    <div class="card">
+      <label class="field" id="batchLabel">Batch</label>
+      <input type="search" id="batchSearch" class="search" placeholder="Search batches" aria-label="Search batches" hidden>
+      <div class="chips" id="chips" role="radiogroup" aria-labelledby="batchLabel"></div>
+      <p class="hint" id="chipsHint" hidden></p>
+      <div id="noBatch" hidden><p class="empty">No batches yet</p><button class="secondary gap" onclick="openEdit('')">Add the first batch</button></div>
+    </div>
+
+    <div class="card">
+      <div class="mode" role="group" aria-label="Class type">
+        <button id="typeLive" class="on" onclick="setType('live')"><i class="dot live"></i>Live class</button>
+        <button id="typeRec" onclick="setType('recorded')"><i class="dot recorded"></i>Recorded class</button>
+      </div>
+      <p class="znote" id="zoomNote" hidden></p>
+
+      <div id="liveZoom">
+        <label class="field" for="zTitle">Class title</label>
+        <input type="text" id="zTitle" placeholder="Writing Task 2: opinion essays">
+        <div class="when">
+          <div><label class="field" id="dayLabel">Day</label>
+            <div class="days" id="days" role="radiogroup" aria-labelledby="dayLabel"></div></div>
+          <div><label class="field" id="timeLabel">Time</label>
+            <div class="clock" role="group" aria-labelledby="timeLabel">
+              <select id="hh" aria-label="Hour"></select><span class="colon" aria-hidden="true">:</span><select id="mm" aria-label="Minutes"></select><select id="ap" aria-label="AM or PM"><option>AM</option><option>PM</option></select>
+            </div></div>
+          <div><label class="field" id="lenLabel">Length</label>
+            <div class="chips" role="radiogroup" aria-labelledby="lenLabel">
+              <label class="chip"><input type="radio" name="minutes" value="60" checked><span>1 h</span></label>
+              <label class="chip"><input type="radio" name="minutes" value="90"><span>1.5 h</span></label>
+              <label class="chip"><input type="radio" name="minutes" value="120"><span>2 h</span></label>
+            </div></div>
+          <p class="when-sum" id="whenSum" hidden></p>
+          <input type="hidden" id="start">
+        </div>
+        <button class="link" onclick="usePaste(true)">Paste a Zoom invitation instead</button>
+      </div>
+
+      <div id="recPick">
+        <label class="field">Pick the recording</label>
+        <div class="recs" id="recList"></div>
+        <button class="link" onclick="usePaste(true)">Paste a link instead</button>
+      </div>
+
+      <div id="pasteBox">
+        <label class="field" for="invite" id="pasteLabel">Zoom invitation</label>
+        <textarea id="invite"></textarea>
+        <button class="link" id="backToPick" onclick="usePaste(false)">Pick from Zoom recordings instead</button>
+      </div>
+
+      <div id="titleWrap" class="gap"><label class="field" for="title">Class title <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="title" placeholder="Uses the Zoom topic"></div>
+
+      <div class="state" id="state"></div>
+      <details>
+        <summary>Tip for students</summary>
+        <input type="text" id="tip" placeholder="Consistency beats intensity. Progress over perfection." aria-label="Tip for students" style="margin:4px 0 4px">
+      </details>
+    </div>
+
+    <div class="card ready" id="readyCard" hidden>
+      <div class="ready-mark" id="readyMark"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h2 id="readyTitle">Email ready in Gmail</h2>
+      <p class="ready-text" id="readyText"></p>
+      <p class="ready-error" id="readyError" hidden></p>
+      <ol class="steps" id="readySteps"></ol>
+      <a class="primary" id="readyOpen" href="#" target="_blank" rel="noopener"><span id="readyOpenLabel">Open Gmail</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></a>
+      <a class="link" id="readyWeb" href="#" target="_blank" rel="noopener">Open Gmail in the browser instead</a>
+      <button class="link" onclick="hideReady()">Make another class email</button>
+    </div>
+
+    <div class="card" id="previewCard">
+      <h2><span id="previewTitle">Email preview</span> <span class="tag" id="sampleTag">Sample</span></h2>
+      <div class="subject" id="subject"></div>
+      <iframe id="frame" title="Email preview"></iframe>
+      <div class="copykit" id="copyKit" hidden>
+        <p class="copy-title">Send by hand</p>
+        <div class="copy-grid">
+          <button class="secondary wide-btn" onclick="copyDesign()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy email design</button>
+          <button class="secondary" onclick="copySubject()">Copy subject</button>
+          <button class="secondary" onclick="copyStudents()">Copy student emails</button>
+        </div>
+        <p class="copy-note" id="copyNote" role="status"></p>
+      </div>
+    </div>
+
+    <div class="sendbar" id="sendBar" hidden>
+      <button class="primary" id="sendBtn" onclick="doSend()"><span id="sendLabel">Open in Gmail</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span></button>
+    </div>
+  </section>
+
+  <!-- BATCHES -->
+  <section id="batches" hidden>
+    <div class="head"><div><h1>Batches</h1><p class="sub" id="batchTotal"></p></div>
+      <button class="secondary" onclick="openEdit('')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New batch</button></div>
+    <input type="search" id="listSearch" class="search" placeholder="Search batches" aria-label="Search batches" hidden>
+    <div class="card" id="batchList"></div>
+  </section>
+
+</main>
+
+<!-- Batch details and batch edit open as a sheet from the bottom. The x goes back one step. -->
+<dialog id="sheet" class="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet-head">
+    <h2 id="sheetTitle"></h2>
+    <button class="close" onclick="back()" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </div>
+  <div class="sheet-body" id="sheetBody">
+    <div id="sheetMsg" class="msg" role="status" hidden></div>
+    <section id="detail" hidden>
+    <p class="sub" id="dCount" style="margin:0 4px 12px"></p>
+    <div class="card stats" id="dStats"></div>
+    <button class="primary" onclick="sendTo(detailName)"><span>Send a class to this batch</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></button>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="secondary" onclick="openEdit(detailName)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>Edit emails</button>
+      <button class="secondary" onclick="copyEmails(detailEmails)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy emails</button>
+    </div>
+    <div class="card"><h2>Classes</h2><div id="dClasses"></div></div>
+  </section>
+    <section id="edit" hidden>
+    <div class="card">
+      <label class="field" for="bName">Batch name</label>
+      <input type="text" id="bName" placeholder="Batch 82" autocomplete="off">
+      <label class="field gap" for="bEmails">Student emails</label>
+      <textarea id="bEmails" placeholder="Paste the emails here, in any format: one per line, with commas, with spaces, or straight from Gmail or WhatsApp"></textarea>
+      <div class="check" id="check"></div>
+      <div class="gap"><button class="primary" id="saveBtn" onclick="doSave()"><span>Save batch</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span></button></div>
+      <button class="secondary" id="copyBtn" style="width:100%;margin-top:8px" onclick="copyEmails(lastCheck.emails)">Copy all emails</button>
+    </div>
+    <button class="link danger" id="delBtn" onclick="doDelete()">Delete this batch</button>
+  </section>
+  </div>
+</dialog>
+
+<script>
+let titleTouched = false, batches = [], zoomOn = false, recsOn = false, type = 'live', paste = { live: false, recorded: false }, recs = null, kit = null, timer, seq = 0;
+let day = '', clock = '', stack = [], picked = '', detailName = '', detailEmails = [], editingName = '', lastCheck = { emails: [], skipped: [] }, checkTimer, checkSeq = 0;
+const $ = id => document.getElementById(id);
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many || one + 's');
+const hoursShort = m => !m ? '0m' : m < 60 ? m + 'm' : Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '');
+// Shrinks any stat figure that still does not fit its column (never below 14px); last resort is its short form.
+function fitStats() {
+  document.querySelectorAll('.stat .n').forEach(n => {
+    n.style.fontSize = '';
+    if (n.dataset.full) n.textContent = n.dataset.full;
+    let f = parseFloat(getComputedStyle(n).fontSize);
+    while (n.scrollWidth > n.clientWidth && f > 14) { f -= 1; n.style.fontSize = f + 'px'; }
+    if (n.scrollWidth > n.clientWidth && n.dataset.short) n.textContent = n.dataset.short;
+  });
+}
+addEventListener('resize', fitStats);
+const hours = m => !m ? '0 min' : m < 60 ? m + ' min' : Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + (m % 60) + ' min' : '');
+const store = (k, v) => { try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const read = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
+
+function say(text, ok) {
+  const inSheet = stack.length > 0;
+  const m = $(inSheet ? 'sheetMsg' : 'msg'); m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'err'); m.hidden = false;
+  if (inSheet) $('sheetBody').scrollTo({ top: 0, behavior: 'smooth' }); else window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function call(fn, args, onOk, btn, onFail) {
+  if (btn) { btn.disabled = true; btn.classList.add('busy'); }
+  const done = () => { if (btn) { btn.disabled = false; btn.classList.remove('busy'); } };
+  google.script.run
+    .withSuccessHandler(r => { done(); onOk(r); })
+    .withFailureHandler(e => { done(); if (onFail) onFail(e); else say(e.message || String(e), false); })[fn](...args);
+}
+
+// ---- day and time pickers (device time = Bangladesh time) ----
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const clock12 = t => { const [h, m] = t.split(':').map(Number); return ((h % 12) || 12) + ':' + pad(m) + (h < 12 ? ' AM' : ' PM'); };
+const CAL = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>';
+const CLOCK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+
+function renderDays() {
+  const box = $('days'); box.innerHTML = '';
+  const now = new Date(), list = [];
+  for (let i = 0; i < 14; i++) list.push(ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + i)));
+  if (day && !list.includes(day)) list.push(day);
+  list.forEach((v, i) => {
+    const [y, m, d] = v.split('-').map(Number);
+    const l = document.createElement('label'); l.className = 'day';
+    l.innerHTML = '<input type="radio" name="day"><span class="wd"></span><span class="dn"></span><span class="mo"></span>';
+    const r = l.querySelector('input'); r.value = v; r.checked = v === day;
+    r.setAttribute('aria-label', WD[new Date(y, m - 1, d).getDay()] + ' ' + d + ' ' + MO[m - 1]);
+    r.onchange = () => { day = v; syncWhen(); };
+    l.querySelector('.wd').textContent = i === 0 ? 'Today' : WD[new Date(y, m - 1, d).getDay()];
+    l.querySelector('.dn').textContent = d;
+    l.querySelector('.mo').textContent = MO[m - 1];
+    box.append(l);
+  });
+  const other = document.createElement('label'); other.className = 'day other';
+  other.innerHTML = CAL + '<span class="mo">Other</span><input type="date" class="native" aria-label="Pick another date">';
+  const inp = other.querySelector('input'); inp.min = list[0];
+  inp.onchange = () => { if (inp.value) { day = inp.value; renderDays(); syncWhen(); } };
+  box.append(other);
+  const sel = box.querySelector('input[type=radio]:checked');
+  if (sel) sel.parentElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+// Time is one field in three parts (hour : minutes AM/PM); each part opens the phone's own picker.
+function buildClock() {
+  for (let h = 1; h <= 12; h++) $('hh').add(new Option(String(h), String(h)));
+  for (let m = 0; m < 60; m += 5) $('mm').add(new Option(pad(m), pad(m)));
+  setClock(read('lastTime') || '20:00');
+  ['hh', 'mm', 'ap'].forEach(id => $(id).addEventListener('change', readClock));
+}
+function setClock(t) {
+  const [h, m] = t.split(':').map(Number);
+  $('hh').value = String((h % 12) || 12); $('mm').value = pad(m - (m % 5)); $('ap').value = h < 12 ? 'AM' : 'PM';
+  clock = pad(h) + ':' + pad(m - (m % 5));
+}
+function readClock() {
+  const h = (Number($('hh').value) % 12) + ($('ap').value === 'PM' ? 12 : 0);
+  clock = pad(h) + ':' + $('mm').value;
+  syncWhen();
+}
+
+function syncWhen() {
+  const start = day && clock ? day + 'T' + clock : '';
+  $('start').value = start;
+  const sum = $('whenSum');
+  sum.hidden = !start;
+  if (start) {
+    const [h, m] = clock.split(':').map(Number);
+    const end = (h * 60 + m + Number(minutes())) % 1440;
+    sum.innerHTML = CLOCK + '<span></span>';
+    sum.querySelector('span').textContent = whenShort(start).replace(/, (\d+:\d+ [AP]M)$/, ' · $1') + ' to ' + clock12(pad(Math.floor(end / 60)) + ':' + pad(end % 60));
+  }
+  schedule(0);
+}
+function resetWhen() {
+  store('lastTime', clock);
+  day = ymd(new Date());
+  renderDays(); setClock(clock); syncWhen();
+}
+
+// ---- sheet: a stack of {view, name}; x and Esc go back one step, the dimmed area closes it ----
+const sheet = $('sheet');
+function showSheet(view, title) {
+  $('detail').hidden = view !== 'detail'; $('edit').hidden = view !== 'edit';
+  $('sheetTitle').textContent = title; $('sheetMsg').hidden = true; $('sheetBody').scrollTop = 0;
+  if (!sheet.open) { sheet.classList.remove('closing'); sheet.showModal(); }
+}
+function openDetail(name) { stack.push({ view: 'detail', name }); renderDetail(name); }
+function openEdit(name) { stack.push({ view: 'edit', name }); renderEdit(name); }
+function back() {
+  stack.pop();
+  const top = stack[stack.length - 1];
+  if (!top) return closeSheet();
+  if (top.view === 'detail') renderDetail(top.name); else renderEdit(top.name);
+}
+function closeSheet() {
+  stack = [];
+  if (!sheet.open) return;
+  sheet.classList.add('closing');
+  setTimeout(() => { sheet.close(); sheet.classList.remove('closing'); }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 190);
+}
+sheet.addEventListener('cancel', e => { e.preventDefault(); back(); });
+sheet.addEventListener('click', e => {
+  if (e.target !== sheet) return;
+  const r = sheet.getBoundingClientRect();
+  if (e.clientY < r.top || e.clientY > r.bottom || e.clientX < r.left || e.clientX > r.right) closeSheet();
+});
+
+// ---- screens ----
+function go(view) {
+  ['send', 'batches'].forEach(v => { $(v).hidden = v !== view; });
+  $('navSend').classList.toggle('on', view === 'send');
+  $('navBatches').classList.toggle('on', view === 'batches');
+  if (view !== 'send') $('msg').hidden = true;
+  if (view === 'batches') renderBatchList();
+  window.scrollTo(0, 0);
+}
+
+// ---- send ----
+function current() { return picked; }
+function minutes() { const r = document.querySelector('input[name=minutes]:checked'); return r ? r.value : '60'; }
+function chosenRec() { const r = document.querySelector('input[name=rec]:checked'); return r && recs ? recs[Number(r.value)] : null; }
+function source() {
+  if (!zoomOn || paste[type] || (type === 'recorded' && !recsOn)) return 'paste';
+  return 'zoom';
+}
+function form() {
+  const liveZoom = type === 'live' && source() === 'zoom';
+  return { batch: current(), type, source: source(), title: liveZoom ? $('zTitle').value : $('title').value,
+    start: $('start').value, minutes: minutes(), invite: $('invite').value, tip: $('tip').value, rec: chosenRec() };
+}
+
+function setType(t) {
+  type = t; store('type', t); fillTitle();
+  $('typeLive').classList.toggle('on', t === 'live'); $('typeRec').classList.toggle('on', t === 'recorded');
+  $('typeLive').setAttribute('aria-pressed', t === 'live'); $('typeRec').setAttribute('aria-pressed', t === 'recorded');
+  applyMode();
+}
+function usePaste(on) { paste[type] = on; applyMode(); }
+function applyMode() {
+  const src = source();
+  $('liveZoom').hidden = !(type === 'live' && src === 'zoom');
+  $('recPick').hidden = !(type === 'recorded' && src === 'zoom');
+  $('pasteBox').hidden = src === 'zoom';
+  $('backToPick').hidden = !(zoomOn && (type === 'live' || recsOn));
+  $('backToPick').textContent = type === 'live' ? 'Create the Zoom meeting from here instead' : 'Pick from Zoom recordings instead';
+  $('titleWrap').hidden = type === 'live' && src === 'zoom';
+  $('pasteLabel').textContent = type === 'live' ? 'Zoom invitation' : 'Recording link';
+  $('invite').placeholder = type === 'live'
+    ? 'In Zoom: Meetings › your class › Copy invitation, then paste it here'
+    : 'Paste the recording share link (and its passcode, if it has one)';
+  if (type === 'recorded' && src === 'zoom' && recs === null) loadRecs();
+  schedule(0);
+}
+
+function loadRecs() {
+  recs = [];
+  $('recList').innerHTML = '<p class="empty">Loading your Zoom recordings…</p>';
+  call('recentRecordings', [], r => {
+    recs = r;
+    const list = $('recList'); list.innerHTML = '';
+    if (!r.length) { list.innerHTML = '<p class="empty">No cloud recordings in the last 30 days. Paste a link instead</p>'; return; }
+    r.forEach((x, i) => {
+      const l = document.createElement('label'); l.className = 'rec';
+      l.innerHTML = '<input type="radio" name="rec"><i class="dot recorded"></i><div><b></b><span></span></div>';
+      l.querySelector('input').value = i;
+      l.querySelector('input').onchange = () => schedule(0);
+      l.querySelector('b').textContent = x.title;
+      l.querySelector('span').textContent = whenShort(x.start) + (x.minutes ? ' · ' + hours(x.minutes) : '');
+      list.append(l);
+    });
+  }, null, e => { recs = null; $('recList').innerHTML = ''; const p = document.createElement('p'); p.className = 'empty'; p.textContent = (e.message || e) + ' Paste a link instead.'; $('recList').append(p); });
+}
+function whenShort(s) {
+  if (!s) return '';
+  const [y, mo, d, h, mi] = s.split(/[-T:]/).map(Number);
+  const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][mo - 1];
+  return day + ', ' + d + ' ' + mon + ', ' + ((h % 12) || 12) + ':' + String(mi).padStart(2, '0') + (h < 12 ? ' AM' : ' PM');
+}
+
+// Automatic, predictable title from the batch and its next class number. Editing it keeps his text.
+function autoTitle() {
+  const b = batches.find(x => x.name === picked);
+  if (!b || !b.next) return '';
+  return type === 'live' ? b.name + ' · Class ' + b.next.live : b.name + ' · Recording ' + b.next.recorded;
+}
+function fillTitle() {
+  if (titleTouched) return;
+  const t = autoTitle();
+  $('zTitle').value = t; $('title').value = t;
+}
+['zTitle', 'title'].forEach(id => $(id).addEventListener('input', () => {
+  titleTouched = $(id).value.trim() !== '';
+  $(id === 'zTitle' ? 'title' : 'zTitle').value = $(id).value;
+  if (!titleTouched) fillTitle();
+}));
+
+// Zoom in plain words: not connected, connected with a problem, or fine (no note).
+function showZoomNote(z) {
+  const n = $('zoomNote');
+  n.className = 'znote' + (z.problem ? ' warn' : '');
+  n.textContent = z.problem ? 'Zoom problem: ' + z.problem + ' Until it is fixed, paste the Zoom invitation.'
+    : !z.connected ? 'Zoom is not connected yet, so paste the Zoom invitation or link. The setup guide shows how to connect it.' : '';
+  n.hidden = !n.textContent;
+}
+
+// ---- emergency copy: the whole designed email, the subject and the students, for pasting into Gmail by hand ----
+function showKit(k) { kit = k; $('copyKit').hidden = !k; $('copyNote').textContent = ''; }
+function note(t, ok) { $('copyNote').textContent = t; $('copyNote').style.color = ok === false ? 'var(--err)' : ''; }
+function copyVia(el, done) {
+  const range = document.createRange(); range.selectNodeContents(el);
+  const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  const ok = document.execCommand('copy'); sel.removeAllRanges(); el.remove();
+  note(ok ? done : 'Copy did not work here. Long-press the email and copy it', ok);
+}
+function copyPlain(text, done) {
+  const fallback = () => { const t = document.createElement('span'); t.textContent = text; t.style.cssText = 'position:fixed;left:-9999px;white-space:pre'; document.body.append(t); copyVia(t, done); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => note(done), fallback); else fallback();
+}
+function copyDesign() {
+  if (!kit) return;
+  const done = 'Design copied';
+  const fallback = () => { const d = document.createElement('div'); d.innerHTML = kit.html; d.style.cssText = 'position:fixed;left:-9999px;width:600px'; document.body.append(d); copyVia(d, done); };
+  if (navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([kit.html], { type: 'text/html' }), 'text/plain': new Blob([kit.text], { type: 'text/plain' }) })])
+      .then(() => note(done), fallback);
+  } else fallback();
+}
+function copySubject() { if (kit) copyPlain(kit.subject, 'Subject copied'); }
+function copyStudents() { if (kit) copyPlain(kit.emails.join(', '), plural(kit.emails.length, 'email') + ' copied'); }
+
+// Phones get the Gmail app; computers get the exact draft in a new tab.
+const PHONE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
+const ANDROID = /Android/i.test(navigator.userAgent);
+function hideReady() { $('readyCard').hidden = true; $('previewTitle').textContent = 'Email preview'; sampleShown = ''; schedule(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function showReady(r, opened) {
+  const card = $('readyCard'), steps = $('readySteps');
+  const failed = Boolean(r.draftError);
+  $('readyTitle').textContent = failed ? 'Gmail could not save the draft' : 'Email ready in Gmail';
+  $('readyMark').classList.toggle('warn', failed);
+  $('readyMark').innerHTML = failed
+    ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'
+    : '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  $('readyText').textContent = failed
+    ? 'Nothing was sent. Send it by hand with the copy buttons below.'
+    : 'Draft saved for ' + plural(r.count, 'student') + '. Nothing is sent yet.';
+  $('readyError').textContent = failed ? 'Gmail said: ' + r.draftError : '';
+  $('readyError').hidden = !failed;
+  steps.innerHTML = '';
+  const add = html => { const li = document.createElement('li'); li.innerHTML = html; steps.append(li); };
+  if (failed) {
+    add('Paste the <b>design</b> into a new email');
+    add('Paste the <b>subject</b>, and the <b>emails</b> into Bcc');
+    add('Press <b>Send</b>');
+    $('readyOpenLabel').textContent = PHONE ? 'Open Gmail app' : 'Open a new Gmail email';
+    $('readyOpen').href = PHONE ? (ANDROID ? 'intent://#Intent;package=com.google.android.gm;end' : 'googlegmail://') : 'https://mail.google.com/mail/?view=cm&fs=1';
+    $('readyOpen').target = PHONE ? '_top' : '_blank';
+    $('readyWeb').hidden = true;
+  } else if (PHONE) {
+    $('readyOpenLabel').textContent = 'Open Gmail app';
+    $('readyOpen').href = ANDROID
+      ? 'intent://#Intent;package=com.google.android.gm;S.browser_fallback_url=' + encodeURIComponent(r.draftsUrl) + ';end'
+      : 'googlegmail://';
+    $('readyOpen').target = '_top';
+    add('Open <b>Drafts</b> in Gmail');
+    add('Tap the email, press <b>Send</b>');
+    $('readyWeb').href = r.draftsUrl; $('readyWeb').hidden = false;
+  } else {
+    $('readyOpenLabel').textContent = opened ? 'Open the draft again' : 'Open the draft in Gmail';
+    $('readyOpen').href = r.draftUrl; $('readyOpen').target = '_blank';
+    add('Check the email in Gmail and press <b>Send</b>');
+    $('readyWeb').hidden = true;
+  }
+  steps.classList.toggle('single', steps.children.length === 1);
+  $('sendBar').hidden = true; // the draft exists; a second tap would make a duplicate
+  // The preview area now shows the exact email waiting in Gmail.
+  $('previewTitle').textContent = failed ? 'The email to send by hand' : 'The email waiting in Gmail'; $('sampleTag').hidden = true;
+  $('subject').innerHTML = 'Subject <b></b>'; $('subject').querySelector('b').textContent = r.subject;
+  setFrame($('frame'), r.html);
+  showKit(r.copy);
+  card.hidden = false;
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Size the preview to the email itself (the page's scrollHeight never drops below the frame, so it could only grow).
+function fitFrame(frame) {
+  try {
+    const email = frame.contentDocument.body.firstElementChild;
+    if (email) frame.style.height = Math.ceil(email.getBoundingClientRect().height) + 'px';
+  } catch (e) {}
+}
+function setFrame(frame, html) {
+  frame.onload = () => fitFrame(frame);
+  frame.srcdoc = '<!doctype html><meta charset="utf-8"><body style="margin:0">' + html + '</body>';
+}
+addEventListener('resize', () => fitFrame($('frame')));
+// Before the class is filled in, the preview shows a sample of the email so its look is always visible.
+const samples = {};
+let sampleShown = '';
+function showSample() {
+  const t = type;
+  if (sampleShown === t) return;
+  const put = html => {
+    if (type !== t || !$('sendBar').hidden) return;
+    sampleShown = t; $('sampleTag').hidden = false;
+    $('subject').textContent = 'Fill in the class above to see the real email';
+    setFrame($('frame'), html);
+  };
+  if (samples[t]) put(samples[t]); else call('sampleEmail', [t], h => { samples[t] = h; put(h); }, null, () => {});
+}
+function hidePreview() { $('sendBar').hidden = true; showKit(null); showSample(); }
+function schedule(delay) {
+  if (!$('readyCard').hidden) return; // keep showing the email that is waiting in Gmail
+  clearTimeout(timer); seq++;
+  const state = t => { $('state').textContent = t; };
+  const invalid = t => { hidePreview(); state(t); };
+  const f = form();
+  if (!f.batch) return invalid(batches.length ? 'Pick a batch first' : '');
+  if (f.source === 'zoom' && type === 'live') {
+    if (!f.title.trim()) return invalid('Add a title to see the email');
+    if (new Date(f.start) < new Date()) return invalid('That time has already passed. Pick a later time');
+  } else if (f.source === 'zoom') {
+    if (!f.rec) return invalid(recs && recs.length ? 'Tap a recording to see the email' : '');
+  } else {
+    const text = f.invite.trim();
+    if (!text) return invalid('');
+    if (!/https?:\/\//.test(text)) return invalid('No link in this yet. Paste the whole thing');
+  }
+  $('sendBtn').disabled = true;
+  state('Making the preview…');
+  timer = setTimeout(runPreview, delay);
+}
+function runPreview() {
+  const my = ++seq;
+  call('preview', [form()], p => {
+    if (my !== seq) return;
+    $('state').textContent = '';
+    sampleShown = ''; $('sampleTag').hidden = true;
+    $('subject').innerHTML = 'Subject <b></b>'; $('subject').querySelector('b').textContent = p.subject;
+    setFrame($('frame'), p.html);
+    showKit(p.copy);
+    $('sendLabel').textContent = 'Open in Gmail · ' + plural(p.count, 'student');
+    $('sendBtn').disabled = p.count === 0;
+    $('sendBar').hidden = false;
+  }, null, e => { if (my === seq) $('state').textContent = e.message || String(e); });
+}
+function doSend() {
+  const f = form();
+  // Open the tab now, inside the tap, so the browser does not block it; fill it in once the draft exists.
+  const win = PHONE ? null : window.open('about:blank', '_blank');
+  call('send', [f], r => {
+    let opened = false;
+    if (win && !win.closed) { win.location.href = r.draftUrl || 'https://mail.google.com/mail/?view=cm&fs=1'; opened = true; }
+    $('msg').hidden = true;
+    showReady(r, opened);
+    ['invite', 'title', 'zTitle', 'tip'].forEach(id => { $(id).value = ''; });
+    titleTouched = false;
+    resetWhen();
+    document.querySelectorAll('input[name=rec]').forEach(r => { r.checked = false; });
+    refresh();
+  }, $('sendBtn'), e => { if (win) win.close(); say(e.message || String(e), false); });
+}
+function sendTo(name) { closeSheet(); store('lastBatch', name); renderChips(name); fillTitle(); go('send'); schedule(0); }
+
+// Batches arrive most recently used first. Send shows the top few; search finds the rest.
+const SHOW = 6;
+const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
+const matching = q => batches.filter(b => norm(b.name).includes(norm(q)));
+
+function renderChips(pick) {
+  const keep = pick || picked || read('lastBatch');
+  picked = batches.some(x => x.name === keep) ? keep : (batches[0] ? batches[0].name : '');
+  const q = $('batchSearch').value.trim();
+  const found = q ? matching(q) : batches;
+  let shown = found.slice(0, q ? 12 : SHOW);
+  if (!q && picked && !shown.some(b => b.name === picked)) shown = [batches.find(b => b.name === picked), ...shown.slice(0, SHOW - 1)];
+  const box = $('chips'); box.innerHTML = '';
+  shown.forEach(b => {
+    const l = document.createElement('label'); l.className = 'chip';
+    const r = document.createElement('input'); r.type = 'radio'; r.name = 'batch'; r.value = b.name;
+    r.checked = b.name === picked;
+    r.onchange = () => { picked = b.name; store('lastBatch', b.name); fillTitle(); schedule(0); };
+    const n = document.createElement('span'); n.textContent = b.name;
+    const c = document.createElement('span'); c.className = 'count'; c.textContent = b.count;
+    l.append(r, n, c); box.append(l);
+  });
+  const many = batches.length > SHOW;
+  $('batchSearch').hidden = !many;
+  $('batchSearch').placeholder = 'Search ' + batches.length + ' batches';
+  const hint = $('chipsHint');
+  hint.textContent = q && !found.length ? 'No batch called "' + q + '"'
+    : q && found.length > shown.length ? 'Showing ' + shown.length + ' of ' + found.length + '. Type more to narrow it down'
+    : !q && many ? 'Your ' + SHOW + ' most recent batches. Search to find the other ' + (batches.length - SHOW)
+    : '';
+  hint.hidden = !hint.textContent;
+  $('noBatch').hidden = batches.length > 0;
+}
+
+// ---- batches ----
+function renderBatchList() {
+  const list = $('batchList'); list.innerHTML = '';
+  $('batchTotal').textContent = batches.length > 1 ? plural(batches.length, 'batch', 'batches') + ', most recently used first' : '';
+  $('listSearch').hidden = batches.length <= SHOW;
+  $('listSearch').placeholder = 'Search ' + batches.length + ' batches';
+  if (!batches.length) {
+    list.innerHTML = '<p class="empty">No batches yet. Tap New batch and paste the student emails</p>';
+    return;
+  }
+  const q = $('listSearch').value.trim();
+  const found = q ? matching(q) : batches;
+  if (!found.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No batch called "' + q + '"'; list.append(p); return; }
+  found.forEach(b => {
+    const row = document.createElement('div'); row.className = 'row';
+    const open = document.createElement('button'); open.className = 'open';
+    open.innerHTML = '<b></b><span class="meta"></span>';
+    open.querySelector('b').textContent = b.name;
+    open.querySelector('.meta').textContent = plural(b.count, 'student') + ' · ' + plural(b.stats.classes, 'class', 'classes');
+    open.onclick = () => openDetail(b.name);
+    const view = document.createElement('button'); view.className = 'secondary'; view.textContent = 'Details'; view.onclick = open.onclick;
+    const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = 'Edit'; edit.onclick = () => openEdit(b.name);
+    row.append(open, view, edit); list.append(row);
+  });
+}
+
+function renderDetail(name) {
+  detailName = name;
+  $('dCount').textContent = ''; $('dStats').innerHTML = ''; $('dClasses').innerHTML = '<p class="empty">Loading…</p>';
+  showSheet('detail', name);
+  call('batchDetail', [name], d => {
+    detailName = d.name; detailEmails = d.emails;
+    $('sheetTitle').textContent = d.name;
+    $('dCount').textContent = plural(d.emails.length, 'student');
+    const s = d.stats;
+    $('dStats').innerHTML = '';
+    [[s.classes, 'Classes', ''], [s.live, 'Live', 'live'], [s.recorded, 'Recorded', 'recorded'], [hoursShort(s.minutes), 'Total time', '']].forEach(([n, l, dot]) => {
+      const el = document.createElement('div'); el.className = 'stat';
+      el.innerHTML = '<div class="n"></div><div class="l">' + (dot ? '<i class="dot ' + dot + '"></i>' : '') + '<span></span></div>';
+      el.querySelector('.n').textContent = n; el.querySelector('.l span').textContent = l;
+      if (l === 'Total time') { el.querySelector('.n').dataset.full = n; el.querySelector('.n').dataset.short = Math.round(s.minutes / 60) + 'h'; }
+      $('dStats').append(el);
+    });
+    fitStats();
+    const list = $('dClasses'); list.innerHTML = '';
+    if (!d.classes.length) { list.innerHTML = '<p class="empty">No classes sent to this batch yet</p>'; return; }
+    d.classes.forEach(c => {
+      const row = document.createElement('div'); row.className = 'row';
+      row.innerHTML = '<i class="dot ' + c.type + '"></i><div class="main"><b></b><span class="meta"></span></div><div class="len"><b></b><span></span></div>';
+      row.querySelector('.main b').textContent = c.title;
+      row.querySelector('.main .meta').textContent = c.when + ' · ' + (c.type === 'live' ? 'Live' : 'Recorded');
+      const len = c.actual || c.planned;
+      row.querySelector('.len b').textContent = !c.ended ? 'Upcoming' : len ? hours(len) : '';
+      row.querySelector('.len span').textContent = !c.ended ? (c.planned ? hours(c.planned) + ' planned' : '')
+        : c.actual && c.attended ? c.attended + ' joined' : !c.actual && c.planned ? 'planned' : '';
+      list.append(row);
+    });
+  });
+}
+
+function renderEdit(name) {
+  editingName = name;
+  $('bName').value = name; $('bEmails').value = ''; $('check').innerHTML = '';
+  $('delBtn').hidden = !name; $('copyBtn').hidden = !name;
+  showSheet('edit', name ? 'Edit ' + name : 'New batch');
+  if (name) call('batchDetail', [name], d => { $('bEmails').value = d.emails.join('\n'); runCheck(); });
+}
+function runCheck() {
+  clearTimeout(checkTimer);
+  const text = $('bEmails').value;
+  if (!text.trim()) { lastCheck = { emails: [], skipped: [] }; $('check').innerHTML = ''; return; }
+  checkTimer = setTimeout(() => {
+    const my = ++checkSeq;
+    call('checkEmails', [text], r => {
+      if (my !== checkSeq) return;
+      lastCheck = r;
+      const box = $('check'); box.innerHTML = '';
+      const good = document.createElement('div'); good.className = 'good';
+      good.textContent = r.emails.length ? plural(r.emails.length, 'email') + ' found' : 'No emails found yet';
+      box.append(good);
+      if (r.skipped.length) {
+        const bad = document.createElement('div'); bad.className = 'bad';
+        bad.innerHTML = '<div></div><code></code>';
+        bad.firstChild.textContent = plural(r.skipped.length, 'address', 'addresses') + ' could not be read and will be left out. Fix them in the box:';
+        bad.lastChild.textContent = r.skipped.join(', ');
+        box.append(bad);
+      }
+    });
+  }, 300);
+}
+function doSave() {
+  const name = $('bName').value.trim();
+  call('saveBatch', [editingName, name, $('bEmails').value], r => {
+    // The box is only cleared after the server confirms the save.
+    store('lastBatch', r.name);
+    stack = [{ view: 'detail', name: r.name }];
+    refresh(() => { renderDetail(r.name); say('Saved ' + r.name + ' with ' + plural(r.count, 'student'), true); });
+  }, $('saveBtn'));
+}
+function doDelete() {
+  if (!confirm('Delete ' + editingName + '? Its email list is removed. Its class history stays in the data sheet.')) return;
+  call('deleteBatch', [editingName], () => { closeSheet(); refresh(() => { go('batches'); say('Deleted ' + editingName, true); }); }, $('delBtn'));
+}
+
+function copyEmails(list) {
+  const text = list.join(', ');
+  const fallback = () => {
+    const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.append(t); t.select(); t.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy'); t.remove();
+    say(ok ? plural(list.length, 'email') + ' copied, separated by commas' : 'Copy did not work here. Open Edit emails and copy from the box', ok);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => say(plural(list.length, 'email') + ' copied, separated by commas', true), fallback);
+  } else fallback();
+}
+
+// ---- load ----
+let first = true;
+function refresh(then) {
+  call('pageData', [], r => {
+    batches = r.batches;
+    const z = r.zoom || {};
+    zoomOn = Boolean(z.connected && z.create); recsOn = Boolean(z.connected && z.recordings);
+    showZoomNote(z);
+    fillTitle();
+    renderChips();
+    if (first) {
+      first = false;
+      setType(read('type') === 'recorded' ? 'recorded' : 'live');
+      if (!batches.length) openEdit('');
+    } else schedule(0);
+    if (!$('batches').hidden) renderBatchList();
+    if (then) then();
+  });
+}
+// Touching the form after a draft was made starts the next class email.
+['input', 'change'].forEach(ev => $('send').addEventListener(ev, e => { if (!$('readyCard').hidden && !$('readyCard').contains(e.target)) hideReady(); }, true));
+$('invite').addEventListener('input', () => schedule(500));
+$('zTitle').addEventListener('input', () => schedule(600));
+$('title').addEventListener('input', () => schedule(600));
+$('tip').addEventListener('input', () => schedule(600));
+document.querySelectorAll('input[name=minutes]').forEach(r => r.addEventListener('change', syncWhen));
+day = ymd(new Date()); renderDays(); buildClock(); syncWhen();
+$('bEmails').addEventListener('input', runCheck);
+$('batchSearch').addEventListener('input', () => renderChips());
+$('listSearch').addEventListener('input', renderBatchList);
+refresh();
+</script>
+</body>
+</html>
