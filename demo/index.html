@@ -38,7 +38,6 @@ const UrlFetchApp = { fetch: (url, o) => {
     { topic: 'Listening Part 3 practice', start_time: '2026-11-21T14:05:00Z', duration: 72, share_url: 'https://us06web.zoom.us/rec/share/def456', recording_play_passcode: 'xyz' } ] });
   return res(404, { message: 'not mocked' });
 } };
-window.confirm = () => true;
 // Banner images for the email, packed into the script so they never depend on outside hosting.
 // Made from assets/live.jpg and assets/recorded.jpg. Do not edit by hand; paste this file as it is.
 var IMAGES = {
@@ -774,6 +773,10 @@ body:has(dialog[open]){overflow:hidden}
 /* the last thing in a sheet sits the same distance from the bottom as the first from the top */
 #detail > .card:last-child,#edit > .card{margin-bottom:0}
 #delBtn{display:block;margin:8px auto 0}
+.del-ask{margin-top:12px;padding:16px;border-radius:16px;background:var(--err-soft)}
+.del-ask p{margin-bottom:12px;color:var(--err);font-weight:600}
+.del-ask .actions{margin:0}
+.del-yes{background:var(--err);border-color:var(--err);color:#fff}
 @media (min-width:960px){
  .sheet{inset:0;margin:auto;height:fit-content;width:min(640px,calc(100% - 48px));border-radius:20px;box-shadow:0 24px 64px -16px rgba(10,18,38,.35)}
  .sheet[open]{animation-name:pop}
@@ -951,7 +954,11 @@ a.link{display:inline-flex;align-items:center;text-decoration:none;margin-top:4p
       <div class="gap"><button class="primary" id="saveBtn" onclick="doSave()"><span>Save batch</span><span class="ring"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span></button></div>
       <button class="secondary" id="copyBtn" style="width:100%;margin-top:8px" onclick="copyEmails(lastCheck.emails)">Copy all emails</button>
     </div>
-    <button class="link danger" id="delBtn" onclick="doDelete()">Delete this batch</button>
+    <button class="link danger" id="delBtn" onclick="askDelete(true)">Delete this batch</button>
+    <div class="del-ask" id="delAsk" role="alertdialog" aria-labelledby="delQ" hidden>
+      <p id="delQ"></p>
+      <div class="actions"><button class="secondary" onclick="askDelete(false)">Cancel</button><button class="secondary del-yes" id="delYes" onclick="doDelete()">Delete</button></div>
+    </div>
   </section>
   </div>
 </dialog>
@@ -1444,7 +1451,7 @@ function renderDetail(name) {
 function renderEdit(name) {
   editingName = name;
   $('bName').value = name; $('bEmails').value = ''; $('check').innerHTML = '';
-  $('delBtn').hidden = !name; $('copyBtn').hidden = !name;
+  $('delBtn').hidden = !name; $('copyBtn').hidden = !name; $('delAsk').hidden = true;
   showSheet('edit', name ? 'Edit ' + name : 'New batch');
   if (name) call('batchDetail', [name], d => { $('bEmails').value = d.emails.join('\n'); runCheck(); });
 }
@@ -1480,9 +1487,16 @@ function doSave() {
     refresh(() => { renderDetail(r.name); say('Saved ' + r.name + ' with ' + plural(r.count, 'student'), true); });
   }, $('saveBtn'));
 }
+// Two steps on purpose: the first tap only asks.
+function askDelete(on) {
+  $('delAsk').hidden = !on; $('delBtn').hidden = on;
+  if (!on) return;
+  const b = batches.find(x => x.name === editingName);
+  $('delQ').textContent = 'Delete ' + editingName + '?' + (b ? ' Its list of ' + plural(b.count, 'student') + ' is removed.' : '') + ' Its class history stays.';
+  $('delAsk').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
 function doDelete() {
-  if (!confirm('Delete ' + editingName + '? Its email list is removed. Its class history stays in the data sheet.')) return;
-  call('deleteBatch', [editingName], () => { closeSheet(); refresh(() => { go('batches'); say('Deleted ' + editingName, true); }); }, $('delBtn'));
+  call('deleteBatch', [editingName], () => { closeSheet(); refresh(() => { go('batches'); say('Deleted ' + editingName, true); }); }, $('delYes'));
 }
 
 function copyEmails(list) {

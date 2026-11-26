@@ -44,7 +44,6 @@ const UrlFetchApp = { fetch: (url, o) => {
     { topic: 'Listening Part 3 practice', start_time: '2026-11-21T14:05:00Z', duration: 72, share_url: 'https://us06web.zoom.us/rec/share/def456', recording_play_passcode: 'xyz' } ] });
   return res(404, { message: 'not mocked' });
 } };
-window.confirm = () => true;
 ${code}
 // Demo only: banners from this deployment, and sample batches on first visit.
 BANNER_URL = location.origin + '/apps-script/assets/';
